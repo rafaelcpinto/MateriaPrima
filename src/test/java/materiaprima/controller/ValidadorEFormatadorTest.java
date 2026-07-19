@@ -1,5 +1,6 @@
 package materiaprima.controller;
 
+import materiaprima.modelo.PadraoDimensional;
 import org.junit.jupiter.api.Test;
 
 public class ValidadorEFormatadorTest {
@@ -17,6 +18,12 @@ public class ValidadorEFormatadorTest {
                 "Diâmetro sem margem para o próximo comercial deveria ser rejeitado");
         assertTrue(validador.limiteDiametroCilindrico() == 919.2,
                 "A ajuda deve usar o mesmo limite da validação cilíndrica");
+        assertTrue(validador.valoresCilindricosValidos(
+                        950.0, 100.0, 0.0, PadraoDimensional.METRICO),
+                "O padrão métrico deve usar os limites da tabela de sobremetal");
+        assertTrue(!validador.valoresCilindricosValidos(
+                        950.0, 100.0, 0.0, PadraoDimensional.POLEGADA),
+                "O padrão imperial deve respeitar o limite da tabela imperial");
         assertTrue(validador.valoresRetangularesValidos(0.0, 500.0, 999.999),
                 "Lados dentro dos limites deveriam ser aceitos");
         assertTrue(!validador.valoresRetangularesValidos(0.0, 500.0, 1000.0),

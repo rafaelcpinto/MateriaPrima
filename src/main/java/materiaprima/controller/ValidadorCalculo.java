@@ -3,6 +3,7 @@ package materiaprima.controller;
 import materiaprima.dados.TabelasMateriaPrima;
 import materiaprima.modelo.DiametroComercial;
 import materiaprima.modelo.FaixaSobremetal;
+import materiaprima.modelo.PadraoDimensional;
 
 public final class ValidadorCalculo {
 
@@ -17,18 +18,45 @@ public final class ValidadorCalculo {
 
     public boolean valoresCilindricosValidos(
             Double diametro, Double comprimento, Double sobremetalComprimento) {
+        return valoresCilindricosValidos(
+                diametro,
+                comprimento,
+                sobremetalComprimento,
+                PadraoDimensional.POLEGADA
+        );
+    }
+
+    public boolean valoresCilindricosValidos(
+            Double diametro,
+            Double comprimento,
+            Double sobremetalComprimento,
+            PadraoDimensional padrao
+    ) {
         return diametro != null && comprimento != null && sobremetalComprimento != null
-                && diametroCilindricoValido(diametro)
+                && padrao != null
+                && diametroCilindricoValido(diametro, padrao)
                 && comprimento >= 0 && comprimento <= 3500
                 && sobremetalComprimento >= 0;
     }
 
-    private boolean diametroCilindricoValido(double diametro) {
+    private boolean diametroCilindricoValido(
+            double diametro,
+            PadraoDimensional padrao
+    ) {
         if (!Double.isFinite(diametro) || diametro < 0) {
             return false;
         }
 
-        return diametro < limiteDiametroCilindrico();
+        if (padrao == PadraoDimensional.POLEGADA) {
+            return diametro < limiteDiametroCilindrico();
+        }
+
+        for (FaixaSobremetal faixa : TabelasMateriaPrima.faixasSobremetal()) {
+            if (faixa.contem(diametro)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public double limiteDiametroCilindrico() {

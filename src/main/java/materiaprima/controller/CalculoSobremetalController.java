@@ -1,6 +1,7 @@
 package materiaprima.controller;
 
 import materiaprima.modelo.CalcMateriaPrima;
+import materiaprima.modelo.PadraoDimensional;
 import materiaprima.modelo.ResultadoCilindrico;
 import materiaprima.modelo.ResultadoRetangular;
 import materiaprima.view.CalculoSobremetalView;
@@ -27,20 +28,28 @@ public class CalculoSobremetalController {
         Double diametro = validador.lerValor(view.getValor1());
         Double comprimento = validador.lerValor(view.getValor2());
         Double sobremetalComprimento = validador.lerValor(view.getValor3());
+        PadraoDimensional padrao = view.getPadraoDimensionalCilindrico();
 
         if (!validador.valoresCilindricosValidos(
-                diametro, comprimento, sobremetalComprimento)) {
+                diametro, comprimento, sobremetalComprimento, padrao)) {
             view.mostrarValorInvalido();
             return;
         }
 
         CalcMateriaPrima materia = new CalcMateriaPrima(view.getMaterialSelecionado());
         ResultadoCilindrico resultado = materia.calcularCilindrico(
-                diametro, comprimento + sobremetalComprimento, view.isOtimizar());
+                diametro,
+                comprimento + sobremetalComprimento,
+                view.isOtimizar(),
+                padrao
+        );
+        String descricaoDiametro = padrao == PadraoDimensional.METRICO
+                ? resultado.getDiametroPolegadas()
+                : formatador.polegadas(resultado.getDiametroPolegadas());
 
         view.mostrarResultado(
                 formatador.diametroMilimetros(resultado.getDiametroMilimetros()),
-                formatador.polegadas(resultado.getDiametroPolegadas()),
+                descricaoDiametro,
                 formatador.milimetros(resultado.getSobremetal() / 2),
                 formatador.quilogramas(resultado.getMassa()));
     }

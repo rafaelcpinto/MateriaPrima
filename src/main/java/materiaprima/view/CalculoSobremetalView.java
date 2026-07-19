@@ -39,6 +39,7 @@ import materiaprima.controller.CalculoSobremetalController;
 import materiaprima.dados.TabelasMateriaPrima;
 import materiaprima.modelo.DiametroComercial;
 import materiaprima.modelo.Material;
+import materiaprima.modelo.PadraoDimensional;
 
 public class CalculoSobremetalView extends JFrame {
 
@@ -74,6 +75,10 @@ public class CalculoSobremetalView extends JFrame {
     private final JRadioButton perfilRetangular = new JRadioButton("Retangular");
     private final JComboBox<Material> material =
             new JComboBox<Material>(criarListaMateriais());
+    private final JLabel rotuloPadraoDiametro = new JLabel("Padrão do diâmetro");
+    private final JRadioButton padraoMetrico = new JRadioButton("Milímetro");
+    private final JRadioButton padraoPolegada = new JRadioButton("Polegada", true);
+    private final JPanel painelPadraoDiametro = new JPanel(new GridBagLayout());
     private final JLabel densidadeMaterial = new JLabel();
     private final JTextField densidadePersonalizada = new JTextField(14);
     private final JPanel painelDensidade = new JPanel(new CardLayout());
@@ -251,26 +256,74 @@ public class CalculoSobremetalView extends JFrame {
         opcoesPerfil.add(javax.swing.Box.createHorizontalStrut(18));
         opcoesPerfil.add(perfilRetangular);
 
+        ButtonGroup grupoPadraoDiametro = new ButtonGroup();
+        grupoPadraoDiametro.add(padraoMetrico);
+        grupoPadraoDiametro.add(padraoPolegada);
+        padraoPolegada.setSelected(true);
+        padraoMetrico.setSelected(false);
+        padraoMetrico.setBackground(COR_PAINEL);
+        padraoPolegada.setBackground(COR_PAINEL);
+        padraoMetrico.setForeground(COR_TEXTO);
+        padraoPolegada.setForeground(COR_TEXTO);
+
+        int larguraPrimeiraOpcao = Math.max(
+                perfilCilindrico.getPreferredSize().width,
+                padraoMetrico.getPreferredSize().width
+        );
+        Dimension tamanhoPerfilCilindrico = perfilCilindrico.getPreferredSize();
+        Dimension tamanhoPadraoMetrico = padraoMetrico.getPreferredSize();
+        perfilCilindrico.setPreferredSize(new Dimension(
+                larguraPrimeiraOpcao, tamanhoPerfilCilindrico.height));
+        padraoMetrico.setPreferredSize(new Dimension(
+                larguraPrimeiraOpcao, tamanhoPadraoMetrico.height));
+
+        JPanel opcoesPadrao = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        opcoesPadrao.setBackground(COR_PAINEL);
+        opcoesPadrao.add(padraoMetrico);
+        opcoesPadrao.add(javax.swing.Box.createHorizontalStrut(18));
+        opcoesPadrao.add(padraoPolegada);
+
         JLabel rotuloPerfil = new JLabel("Perfil");
         JLabel rotuloMaterial = new JLabel("Material");
         JLabel rotuloDensidade = new JLabel("Densidade (g/cm³)");
         rotuloPerfil.setLabelFor(perfilCilindrico);
         rotuloMaterial.setLabelFor(material);
         rotuloDensidade.setLabelFor(densidadePersonalizada);
+        rotuloPadraoDiametro.setLabelFor(padraoPolegada);
+        Dimension tamanhoRotuloPadrao = rotuloPadraoDiametro.getPreferredSize();
+        rotuloPerfil.setPreferredSize(tamanhoRotuloPadrao);
+        rotuloMaterial.setPreferredSize(tamanhoRotuloPadrao);
+        rotuloDensidade.setPreferredSize(tamanhoRotuloPadrao);
+        String ajudaPadrao = "<html>Define como o diâmetro da matéria-prima será "
+                + "selecionado.<br><br><b>Milímetro:</b> arredonda para o próximo milímetro "
+                + "inteiro.<br><b>Polegada:</b> seleciona o próximo diâmetro disponível na "
+                + "tabela imperial.<br><br>As entradas continuam sendo informadas em "
+                + "milímetros.</html>";
+        rotuloPadraoDiametro.setToolTipText(ajudaPadrao);
+        padraoMetrico.setToolTipText(ajudaPadrao);
+        padraoPolegada.setToolTipText(ajudaPadrao);
+        painelPadraoDiametro.setBackground(COR_PAINEL);
+        adicionarLinha(painelPadraoDiametro, 0, rotuloPadraoDiametro, opcoesPadrao);
         configurarDensidade();
         adicionarLinha(painel, 0, rotuloPerfil, opcoesPerfil);
-        adicionarLinha(painel, 1, rotuloMaterial, material);
-        adicionarLinha(painel, 2, rotuloDensidade, painelDensidade);
-        adicionarLinha(painel, 3, criarRotuloComAjuda(rotuloValor1, ajudaValor1), valor1);
-        adicionarLinha(painel, 4, criarRotuloComAjuda(rotuloValor2, ajudaValor2), valor2);
-        adicionarLinha(painel, 5, criarRotuloComAjuda(rotuloValor3, ajudaValor3), valor3);
+        GridBagConstraints linhaPadrao = restricoes(0, 1);
+        linhaPadrao.gridwidth = 2;
+        linhaPadrao.fill = GridBagConstraints.HORIZONTAL;
+        linhaPadrao.weightx = 1.0;
+        linhaPadrao.insets = new Insets(0, 0, 0, 0);
+        painel.add(painelPadraoDiametro, linhaPadrao);
+        adicionarLinha(painel, 2, rotuloMaterial, material);
+        adicionarLinha(painel, 3, rotuloDensidade, painelDensidade);
+        adicionarLinha(painel, 4, criarRotuloComAjuda(rotuloValor1, ajudaValor1), valor1);
+        adicionarLinha(painel, 5, criarRotuloComAjuda(rotuloValor2, ajudaValor2), valor2);
+        adicionarLinha(painel, 6, criarRotuloComAjuda(rotuloValor3, ajudaValor3), valor3);
 
         otimizar.setToolTipText(
                 "Pode selecionar uma dimensão comercial abaixo da recomendação padrão. "
                         + "Confirme a adequação ao processo de fabricação e à norma aplicável.");
         otimizar.setBackground(COR_PAINEL);
         otimizar.setForeground(COR_TEXTO);
-        GridBagConstraints opcao = restricoes(0, 6);
+        GridBagConstraints opcao = restricoes(0, 7);
         opcao.gridwidth = 2;
         opcao.insets = new Insets(12, 4, 4, 4);
         painel.add(otimizar, opcao);
@@ -286,7 +339,7 @@ public class CalculoSobremetalView extends JFrame {
         botoes.add(botaoCalcular);
         botoes.add(botaoLimpar);
 
-        GridBagConstraints areaBotoes = restricoes(0, 7);
+        GridBagConstraints areaBotoes = restricoes(0, 8);
         areaBotoes.gridwidth = 2;
         areaBotoes.fill = GridBagConstraints.HORIZONTAL;
         areaBotoes.insets = new Insets(12, 4, 2, 4);
@@ -294,7 +347,7 @@ public class CalculoSobremetalView extends JFrame {
 
         mensagem.setForeground(COR_ERRO);
         mensagem.setHorizontalAlignment(SwingConstants.CENTER);
-        GridBagConstraints areaMensagem = restricoes(0, 8);
+        GridBagConstraints areaMensagem = restricoes(0, 9);
         areaMensagem.gridwidth = 2;
         areaMensagem.fill = GridBagConstraints.HORIZONTAL;
         painel.add(mensagem, areaMensagem);
@@ -616,7 +669,9 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private void atualizarPerfil() {
-        if (isPerfilCilindrico()) {
+        boolean cilindrico = isPerfilCilindrico();
+        painelPadraoDiametro.setVisible(cilindrico);
+        if (cilindrico) {
             rotuloValor1.setText("Diâmetro acabado (mm)");
             rotuloValor2.setText("Comprimento da peça (mm)");
             rotuloValor3.setText("Adicional para fixação (mm)");
@@ -652,6 +707,8 @@ public class CalculoSobremetalView extends JFrame {
             rotuloResultado3.setText("Comprimento comercial");
         }
         limparResultados();
+        revalidate();
+        repaint();
     }
 
     private void destacarResultado(JTextField resultado) {
@@ -704,6 +761,16 @@ public class CalculoSobremetalView extends JFrame {
 
     public boolean isOtimizar() {
         return otimizar.isSelected();
+    }
+
+    public PadraoDimensional getPadraoDimensionalCilindrico() {
+        if (padraoMetrico.isSelected()) {
+            return PadraoDimensional.METRICO;
+        }
+        if (!padraoPolegada.isSelected()) {
+            padraoPolegada.setSelected(true);
+        }
+        return PadraoDimensional.POLEGADA;
     }
 
     public Material getMaterialSelecionado() {
