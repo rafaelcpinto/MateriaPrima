@@ -1,0 +1,14 @@
+# Artefatos de compilação
+/build/
+/dist/
+/out/
+/target/
+
+# Configurações locais das IDEs
+/.idea/
+*.iml
+*.class
+
+# Arquivos temporários
+*.log
+*.tmp
