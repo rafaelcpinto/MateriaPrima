@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MateriaPrima">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/MateriaPrima.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
