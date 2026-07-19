@@ -257,9 +257,8 @@ public class CalculoSobremetalView extends JFrame {
         areaFechar.add(fechar);
         dialogo.add(areaFechar, BorderLayout.SOUTH);
 
-        dialogo.setSize(new Dimension(920, 700));
-        dialogo.setMinimumSize(new Dimension(600, 450));
-        dialogo.setResizable(true);
+        dialogo.pack();
+        dialogo.setResizable(false);
         dialogo.setLocationRelativeTo(this);
         dialogo.setVisible(true);
     }
@@ -278,7 +277,15 @@ public class CalculoSobremetalView extends JFrame {
         }
         conteudo.setOpaque(true);
         conteudo.setBackground(COR_PAINEL);
-        return new JScrollPane(conteudo);
+        JScrollPane painel = new JScrollPane(conteudo);
+        painel.setBorder(BorderFactory.createEmptyBorder());
+        painel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        painel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        painel.setPreferredSize(new Dimension(
+                conteudo.getPreferredSize().width + 4,
+                conteudo.getPreferredSize().height + 4
+        ));
+        return painel;
     }
 
     private ImageIcon carregarImagem(String caminho) {
@@ -999,7 +1006,7 @@ public class CalculoSobremetalView extends JFrame {
             rotuloValor2.setText("Comprimento da peça (mm)");
             rotuloValor3.setText("Adicional para fixação (mm)");
             atualizarAjuda(ajudaValor1, AJUDA_DIAMETRO);
-            ajudaValor1.putClientProperty("textoClique", AJUDA_DIAMETRO);
+            ajudaValor1.putClientProperty("textoClique", null);
             atualizarAjuda(ajudaValor2, AJUDA_COMPRIMENTO);
             atualizarAjuda(ajudaValor3, AJUDA_ADICIONAL);
             atualizarImagemAjuda(ajudaValor1, "/images/sobremetal-dimensoes.png",

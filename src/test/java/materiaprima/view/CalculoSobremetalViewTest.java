@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -77,6 +78,7 @@ class CalculoSobremetalViewTest {
             );
             assertTrue(ajudaValor1.getToolTipText().contains("919,2 mm"));
             assertFalse(ajudaValor1.getToolTipText().contains("38\""));
+            assertNull(ajudaValor1.getClientProperty("textoClique"));
             valor1.setText("46.01");
             valor2.setText("100");
             valor3.setText("20");
