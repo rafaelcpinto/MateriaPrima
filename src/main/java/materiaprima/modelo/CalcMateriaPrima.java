@@ -22,30 +22,29 @@ public class CalcMateriaPrima{
     }
             
          
-     //O ponto de entrada da aplicação está definido na classe MateriaPrima.
-         
-    // --- FUNÇÃO QUE É EXECUTADA AO APERTAR O BOTÃO ----- //
-         
-    //é utilizada se a opção cilindrica for escolhida
-    public ResultadoCilindrico calcularCilindrico(double a,double b,boolean REDUZ){
-        //a = valor do diametro digitado
-        //b = valor do comprimento
-        //c = valor do sobremetal
-        //d = valor do diametro em polegada escolhido
-        double c = calculosobremetal(a);
-        int indice = selecionarIndiceDiametro(a+c, REDUZ);
+    public ResultadoCilindrico calcularCilindrico(
+            double diametroAcabado,
+            double comprimento,
+            boolean reduzir
+    ) {
+        double sobremetalTabela = calcularSobremetal(diametroAcabado);
+        int indice = selecionarIndiceDiametro(
+                diametroAcabado + sobremetalTabela,
+                reduzir
+        );
         DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
         DiametroComercial selecionado = diametros[indice];
-        double d = selecionado.getMilimetros();
-        double sobremetalCalculado = (float)d-(float)a;
-        double massa = calcularMassaCilindro(d,b);
-        return new ResultadoCilindrico(d, selecionado.getPolegadas(), sobremetalCalculado, massa);
+        double diametroSelecionado = selecionado.getMilimetros();
+        double sobremetalCalculado = diametroSelecionado - diametroAcabado;
+        double massa = calcularMassaCilindro(diametroSelecionado, comprimento);
+        return new ResultadoCilindrico(
+                diametroSelecionado,
+                selecionado.getPolegadas(),
+                sobremetalCalculado,
+                massa
+        );
     }
-    //é utilizada se a opção retangular for escolhida
     public ResultadoRetangular calcularRetangular(double a,double b,double c,boolean REDUZ){
-        //a = lado1
-        //b = lado2
-        //c = lado3
         double factor;
         if(REDUZ){
             factor =0.5;
@@ -53,32 +52,29 @@ public class CalcMateriaPrima{
         else{
             factor =1.0;
         }
-        double lado1 = (int)(1+a+calculosobremetal(a)*factor);
-        double lado2 = (int)(1+b+calculosobremetal(b)*factor);
-        double lado3 = (int)(1+c+calculosobremetal(c)*factor);
+        double lado1 = (int)(1+a+calcularSobremetal(a)*factor);
+        double lado2 = (int)(1+b+calcularSobremetal(b)*factor);
+        double lado3 = (int)(1+c+calcularSobremetal(c)*factor);
         
         double massa = lado1*lado2*lado3*material.getDensidade();
         return new ResultadoRetangular(lado1, lado2, lado3, massa);
     }
-    //função que define o valor do sobremetal
-    private double calculosobremetal(double a) {
-        if (!Double.isFinite(a)) {
-            throw new IllegalArgumentException("Valor inválido: " + a);
+    private double calcularSobremetal(double dimensao) {
+        if (!Double.isFinite(dimensao)) {
+            throw new IllegalArgumentException("Valor inválido: " + dimensao);
         }
         for (FaixaSobremetal faixa : TabelasMateriaPrima.faixasSobremetal()) {
-            if (faixa.contem(a)) {
+            if (faixa.contem(dimensao)) {
                 return faixa.getSobremetal();
             }
         }
-        throw new IllegalArgumentException("Valor fora dos limites da tabela: " + a);
+        throw new IllegalArgumentException("Valor fora dos limites da tabela: " + dimensao);
    }
-   //Escolhe a posição do diâmetro comercial mais próximo.
-   private int selecionarIndiceDiametro(double a,boolean REDUZ) {
+   private int selecionarIndiceDiametro(double diametroNecessario, boolean reduzir) {
         DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
-        int indice = localizarIntervalo(a, diametros);
-        return REDUZ ? indice : indice + 1;
+        int indice = localizarIntervalo(diametroNecessario, diametros);
+        return reduzir ? indice : indice + 1;
     }
-   //METODO DE COMPARAÇÃO DE VALORES UTILIZADO PARA ESCOLHA DOS VALORES DE SOBREMETAL E DIAMETRO, é chamada pelos metodos calculosobremetal() e calculodiametro()
     private int localizarIntervalo(double valor, DiametroComercial[] diametros) {
         if (!Double.isFinite(valor) || diametros == null || diametros.length < 2) {
             throw new IllegalArgumentException("Dados inválidos para localizar o intervalo.");
@@ -103,14 +99,9 @@ public class CalcMateriaPrima{
         );
     }
     
-    //METODO UTILIZADO PARA REALIZAR OS CALCULOS NECESSARIOS
-    
-    private double calcularMassaCilindro(double diametro,double comprimento){
-        double raio = diametro/2;
-        double volume;
-        volume = raio*raio*Math.PI*comprimento;
+    private double calcularMassaCilindro(double diametro, double comprimento) {
+        double raio = diametro / 2.0;
+        double volume = raio * raio * Math.PI * comprimento;
         return volume * material.getDensidade();
-        //percentual = (diametroDigitado/diametroPoelegada)*100; //nao esta sendo utilizada
-        
     }
 }

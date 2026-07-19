@@ -11,18 +11,18 @@ public class CalcMateriaPrimaTest {
         ResultadoCilindrico resultado = calculo.calcularCilindrico(0.0, 100.0, false);
         assertTrue(resultado.getMassa() >= 0, "Diâmetro zero deveria ser aceito");
 
-        resultado = calculo.calcularCilindrico(953.0, 100.0, false);
-        assertTrue(resultado.getDiametroMilimetros() == 1000.0,
-                "953 mm deveria selecionar matéria-prima de 1000 mm");
+        resultado = calculo.calcularCilindrico(919.1, 100.0, false);
+        assertTrue(resultado.getDiametroMilimetros() == 965.2,
+                "919,1 mm deveria selecionar matéria-prima de 965,2 mm");
     }
 
     @Test
     void rejeitaLimitesCilindricosInvalidos() {
         assertThrows(new Acao() {
             public void executar() {
-                new CalcMateriaPrima().calcularCilindrico(954.0, 100.0, false);
+                new CalcMateriaPrima().calcularCilindrico(919.2, 100.0, false);
             }
-        }, "954 mm deveria ser rejeitado por não haver próximo diâmetro comercial");
+        }, "919,2 mm deveria ser rejeitado por não haver próximo diâmetro comercial");
 
         assertThrows(new Acao() {
             public void executar() {

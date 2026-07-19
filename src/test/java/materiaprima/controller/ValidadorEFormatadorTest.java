@@ -11,10 +11,12 @@ public class ValidadorEFormatadorTest {
         assertTrue(validador.lerValor("12.5") == 12.5, "Número decimal deveria ser lido");
         assertTrue(validador.lerValor("") == null, "Campo vazio deveria ser rejeitado");
         assertTrue(validador.lerValor("NaN") == null, "NaN deveria ser rejeitado");
-        assertTrue(validador.valoresCilindricosValidos(953.0, 3500.0, 0.0),
+        assertTrue(validador.valoresCilindricosValidos(919.1, 3500.0, 0.0),
                 "Diâmetro atendido pela nova tabela deveria ser aceito");
-        assertTrue(!validador.valoresCilindricosValidos(954.0, 100.0, 0.0),
+        assertTrue(!validador.valoresCilindricosValidos(919.2, 100.0, 0.0),
                 "Diâmetro sem margem para o próximo comercial deveria ser rejeitado");
+        assertTrue(validador.limiteDiametroCilindrico() == 919.2,
+                "A ajuda deve usar o mesmo limite da validação cilíndrica");
         assertTrue(validador.valoresRetangularesValidos(0.0, 500.0, 999.999),
                 "Lados dentro dos limites deveriam ser aceitos");
         assertTrue(!validador.valoresRetangularesValidos(0.0, 500.0, 1000.0),

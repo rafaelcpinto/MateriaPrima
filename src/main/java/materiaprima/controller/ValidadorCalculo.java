@@ -28,15 +28,20 @@ public final class ValidadorCalculo {
             return false;
         }
 
+        return diametro < limiteDiametroCilindrico();
+    }
+
+    public double limiteDiametroCilindrico() {
         DiametroComercial[] diametrosComerciais = TabelasMateriaPrima.diametrosComerciais();
         double maiorDiametroComercial =
                 diametrosComerciais[diametrosComerciais.length - 1].getMilimetros();
         for (FaixaSobremetal faixa : TabelasMateriaPrima.faixasSobremetal()) {
-            if (faixa.contem(diametro)) {
-                return diametro + faixa.getSobremetal() < maiorDiametroComercial;
+            double limite = maiorDiametroComercial - faixa.getSobremetal();
+            if (faixa.contem(limite)) {
+                return limite;
             }
         }
-        return false;
+        throw new IllegalStateException("Limite cilíndrico não encontrado.");
     }
 
     public boolean valoresRetangularesValidos(Double lado1, Double lado2, Double lado3) {

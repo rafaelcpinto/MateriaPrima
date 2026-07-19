@@ -93,7 +93,7 @@ Os testes cobrem:
 
 - diâmetro acabado: deve pertencer às faixas técnicas e permitir a seleção
   de um diâmetro comercial após a aplicação do sobremetal (na tabela atual,
-  valores até `953 mm` são aceitos);
+  valores menores que `919,2 mm` são aceitos);
 - comprimento: de `0` a `3500 mm`;
 - sobremetal no comprimento: maior ou igual a `0`.
 

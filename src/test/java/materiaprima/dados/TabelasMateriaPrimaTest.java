@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TabelasMateriaPrimaTest {
 
@@ -14,7 +15,7 @@ class TabelasMateriaPrimaTest {
     void diametrosComerciaisSaoValidosEEstaoEmOrdemCrescente() {
         DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
 
-        assertFalse(diametros.length == 0);
+        assertTrue(diametros.length > 0);
         for (int indice = 0; indice < diametros.length; indice++) {
             assertNotNull(diametros[indice]);
             assertFalse(diametros[indice].getPolegadas().trim().isEmpty());
@@ -23,6 +24,16 @@ class TabelasMateriaPrimaTest {
                         <= diametros[indice - 1].getMilimetros());
             }
         }
+    }
+
+    @Test
+    void ultimoDiametroComercialEhTrintaEOitoPolegadas() {
+        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
+
+        DiametroComercial ultimo = diametros[diametros.length - 1];
+
+        assertEquals(965.2, ultimo.getMilimetros(), 0.0001);
+        assertEquals("38", ultimo.getPolegadas());
     }
 
     @Test

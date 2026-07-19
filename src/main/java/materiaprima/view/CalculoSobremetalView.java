@@ -36,6 +36,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import materiaprima.aplicacao.VersaoAplicacao;
 import materiaprima.controller.CalculoSobremetalController;
+import materiaprima.controller.ValidadorCalculo;
 import materiaprima.dados.TabelasMateriaPrima;
 import materiaprima.modelo.Material;
 
@@ -53,10 +54,7 @@ public class CalculoSobremetalView extends JFrame {
     private static final int LARGURA_MAXIMA_IMAGEM_AJUDA = 820;
     private static final int ALTURA_MAXIMA_IMAGEM_AJUDA = 550;
     private static final String NOME_MATERIAL_PERSONALIZADO = "Densidade personalizada";
-    private static final String AJUDA_DIAMETRO =
-            "Informe o maior diâmetro final da peça após a usinagem. A aplicação "
-                    + "utilizará esse valor para selecionar o diâmetro comercial da "
-                    + "matéria-prima e calcular o sobremetal.";
+    private static final String AJUDA_DIAMETRO = criarTextoAjudaDiametro();
     private static final String AJUDA_COMPRIMENTO =
             "Informe o comprimento final da peça acabada, sem incluir o material adicional "
                     + "necessário para fixação ou faceamento.";
@@ -165,10 +163,15 @@ public class CalculoSobremetalView extends JFrame {
         return painel;
     }
 
-    private void abrirImagemAjuda(String caminho, String titulo) {
+    private void abrirImagemAjuda(String caminho, String titulo, String texto) {
         final JDialog dialogo = new JDialog(this, titulo, true);
         dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialogo.setLayout(new BorderLayout(0, 8));
+        if (texto != null) {
+            JLabel explicacao = new JLabel(formatarTextoAjuda(texto));
+            explicacao.setBorder(BorderFactory.createEmptyBorder(8, 12, 0, 12));
+            dialogo.add(explicacao, BorderLayout.NORTH);
+        }
         dialogo.add(criarPainelImagem(caminho), BorderLayout.CENTER);
 
         JButton fechar = new JButton("Fechar");
@@ -309,6 +312,16 @@ public class CalculoSobremetalView extends JFrame {
         opcoes[cadastrados.length] =
                 new Material(NOME_MATERIAL_PERSONALIZADO, 1.0 / 1_000_000);
         return opcoes;
+    }
+
+    private static String criarTextoAjudaDiametro() {
+        double limite = new ValidadorCalculo().limiteDiametroCilindrico();
+        String milimetros = String.format(
+                new Locale("pt", "BR"), "%.1f", limite);
+        return "Informe o maior diâmetro final da peça após a usinagem. A aplicação "
+                + "utilizará esse valor para selecionar o diâmetro comercial da "
+                + "matéria-prima e calcular o sobremetal."
+                + "<br><br>Valor máximo = " + milimetros + " mm";
     }
 
     private void configurarDensidade() {
@@ -500,7 +513,11 @@ public class CalculoSobremetalView extends JFrame {
                 Object caminho = ajuda.getClientProperty("caminhoImagem");
                 Object titulo = ajuda.getClientProperty("tituloAjuda");
                 if (caminho instanceof String && titulo instanceof String) {
-                    abrirImagemAjuda((String) caminho, (String) titulo);
+                    abrirImagemAjuda(
+                            (String) caminho,
+                            (String) titulo,
+                            (String) ajuda.getClientProperty("textoClique")
+                    );
                 }
             }
         });
@@ -509,6 +526,10 @@ public class CalculoSobremetalView extends JFrame {
 
     private String formatarTooltip(String texto) {
         return "<html><div style='width: 320px;'>" + texto + "</div></html>";
+    }
+
+    private String formatarTextoAjuda(String texto) {
+        return "<html><div style='width: 860px;'>" + texto + "</div></html>";
     }
 
     private void atualizarAjuda(JLabel ajuda, String texto) {
@@ -598,6 +619,7 @@ public class CalculoSobremetalView extends JFrame {
             rotuloValor2.setText("Comprimento da peça (mm)");
             rotuloValor3.setText("Adicional para fixação (mm)");
             atualizarAjuda(ajudaValor1, AJUDA_DIAMETRO);
+            ajudaValor1.putClientProperty("textoClique", AJUDA_DIAMETRO);
             atualizarAjuda(ajudaValor2, AJUDA_COMPRIMENTO);
             atualizarAjuda(ajudaValor3, AJUDA_ADICIONAL);
             atualizarImagemAjuda(ajudaValor1, "/images/sobremetal-dimensoes.png",
@@ -614,6 +636,7 @@ public class CalculoSobremetalView extends JFrame {
             rotuloValor2.setText("Altura (mm)");
             rotuloValor3.setText("Comprimento (mm)");
             atualizarAjuda(ajudaValor1, AJUDA_LARGURA);
+            ajudaValor1.putClientProperty("textoClique", null);
             atualizarAjuda(ajudaValor2, AJUDA_ALTURA);
             atualizarAjuda(ajudaValor3, AJUDA_COMPRIMENTO);
             atualizarImagemAjuda(ajudaValor1, "/images/sobremetal-dimensoes.png",

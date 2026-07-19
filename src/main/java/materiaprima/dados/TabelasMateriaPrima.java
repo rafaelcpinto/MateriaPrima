@@ -139,8 +139,7 @@ public final class TabelasMateriaPrima {
             new DiametroComercial(812.8, "32"),
             new DiametroComercial(863.6, "34"),
             new DiametroComercial(914.4, "36"),
-            new DiametroComercial(965.2, "38"),
-            new DiametroComercial(1000.0, "1000 mm")
+            new DiametroComercial(965.2, "38")
     };
 
     static {
