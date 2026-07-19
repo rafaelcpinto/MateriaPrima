@@ -1,25 +1,25 @@
 package materiaprima.modelo;
 
-public final class DiametroComercial {
+public final class DimensaoComercial {
 
     private final double milimetros;
     private final String descricao;
     private final PadraoDimensional padrao;
 
-    public DiametroComercial(
+    public DimensaoComercial(
             double milimetros,
             String descricao,
             PadraoDimensional padrao
     ) {
         if (!Double.isFinite(milimetros) || milimetros <= 0) {
             throw new IllegalArgumentException(
-                    "O diâmetro em milímetros deve ser positivo e finito."
+                    "A dimensão em milímetros deve ser positiva e finita."
             );
         }
 
         if (descricao == null || descricao.trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "A descrição do diâmetro é obrigatória."
+                    "A descrição da dimensão é obrigatória."
             );
         }
 

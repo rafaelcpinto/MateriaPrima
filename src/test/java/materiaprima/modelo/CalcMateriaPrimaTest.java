@@ -79,6 +79,68 @@ public class CalcMateriaPrimaTest {
     }
 
     @Test
+    void selecionaDimensoesRetangularesMetricas() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+        ResultadoRetangular metrico = calculo.calcularRetangular(
+                45.1, 56.0, 94.7, false, PadraoDimensional.METRICO);
+        ResultadoRetangular compativel = calculo.calcularRetangular(
+                45.1, 56.0, 94.7, false);
+
+        assertTrue(metrico.getLarguraMilimetros() == 51.0,
+                "A largura métrica deveria ser arredondada para 51 mm");
+        assertTrue(metrico.getAlturaMilimetros() == 61.0,
+                "A altura métrica deveria ser arredondada para 61 mm");
+        assertTrue(metrico.getComprimentoMilimetros() == 102.0,
+                "O comprimento métrico deveria ser arredondado para 102 mm");
+        assertTrue(metrico.getLarguraDescricao().endsWith("mm")
+                        && metrico.getAlturaDescricao().endsWith("mm")
+                        && metrico.getComprimentoDescricao().endsWith("mm"),
+                "As descrições métricas deveriam terminar com mm");
+        assertTrue(compativel.getLado1() == metrico.getLarguraMilimetros()
+                        && compativel.getLado2() == metrico.getAlturaMilimetros()
+                        && compativel.getLado3() == metrico.getComprimentoMilimetros(),
+                "A sobrecarga antiga deveria delegar para o padrão métrico");
+
+        double massaEsperada = 51.0 * 61.0 * 102.0
+                * TabelasMateriaPrima.material(0).getDensidade();
+        assertTrue(metrico.getMassa() == massaEsperada,
+                "A massa deveria usar as dimensões métricas selecionadas");
+    }
+
+    @Test
+    void selecionaDimensoesRetangularesEmPolegada() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+        ResultadoRetangular resultado = calculo.calcularRetangular(
+                45.1, 56.0, 94.7, false, PadraoDimensional.POLEGADA);
+
+        assertTrue(resultado.getLarguraMilimetros() == 50.8,
+                "A largura deveria selecionar 2 polegadas");
+        assertTrue(resultado.getAlturaMilimetros() == 61.9125,
+                "A altura deveria selecionar 2 7/16 polegadas");
+        assertTrue(resultado.getComprimentoMilimetros() == 104.775,
+                "O comprimento deveria selecionar 4 1/8 polegadas");
+        assertTrue("2".equals(resultado.getLarguraDescricao()),
+                "A descrição da largura deveria ser imperial");
+        assertTrue("2   7/16".equals(resultado.getAlturaDescricao()),
+                "A descrição da altura deveria ser imperial");
+        assertTrue("4   1/8".equals(resultado.getComprimentoDescricao()),
+                "A descrição do comprimento deveria ser imperial");
+    }
+
+    @Test
+    void reduzirSelecionaDimensaoImperialInferior() {
+        ResultadoRetangular resultado = new CalcMateriaPrima().calcularRetangular(
+                45.1, 56.0, 94.7, true, PadraoDimensional.POLEGADA);
+
+        assertTrue(resultado.getLarguraMilimetros() == 47.625,
+                "Reduzir deveria escolher a largura inferior");
+        assertTrue(resultado.getAlturaMilimetros() == 58.7375,
+                "Reduzir deveria escolher a altura inferior");
+        assertTrue(resultado.getComprimentoMilimetros() == 98.425,
+                "Reduzir deveria escolher o comprimento inferior");
+    }
+
+    @Test
     void selecionaProximoMilimetroInteiroNoPadraoMetrico() {
         CalcMateriaPrima calculo = new CalcMateriaPrima();
 
@@ -97,7 +159,7 @@ public class CalcMateriaPrimaTest {
 
         assertTrue(antigo.getDiametroMilimetros() == novo.getDiametroMilimetros(),
                 "A sobrecarga antiga deve preservar a seleção imperial");
-        assertTrue(antigo.getDiametroPolegadas().equals(novo.getDiametroPolegadas()),
+        assertTrue(antigo.getDescricaoDiametro().equals(novo.getDescricaoDiametro()),
                 "A descrição imperial deve permanecer igual");
         assertTrue(antigo.getMassa() == novo.getMassa(),
                 "A massa imperial deve permanecer igual");
@@ -115,6 +177,14 @@ public class CalcMateriaPrimaTest {
                 "O padrão métrico deveria selecionar 51 mm");
         assertTrue(polegada.getDiametroMilimetros() == 50.8,
                 "O padrão imperial deveria selecionar 2 polegadas");
+        assertTrue(polegada.getComprimentoTotal() == 100.0,
+                "O resultado deveria armazenar o comprimento usado na massa");
+        double massaEsperada = Math.pow(polegada.getDiametroMilimetros() / 2.0, 2)
+                * Math.PI
+                * polegada.getComprimentoTotal()
+                * TabelasMateriaPrima.material(0).getDensidade();
+        assertTrue(polegada.getMassa() == massaEsperada,
+                "A massa cilíndrica deveria usar o comprimento total do resultado");
         assertTrue(metrico.getMassa() != polegada.getMassa(),
                 "Diâmetros selecionados diferentes devem produzir massas diferentes");
     }
@@ -126,6 +196,13 @@ public class CalcMateriaPrimaTest {
                 new CalcMateriaPrima().calcularCilindrico(50.0, 100.0, false, null);
             }
         }, "Padrão dimensional nulo deveria ser rejeitado");
+
+        assertThrows(new Acao() {
+            public void executar() {
+                new CalcMateriaPrima().calcularRetangular(
+                        50.0, 50.0, 50.0, false, null);
+            }
+        }, "Padrão dimensional retangular nulo deveria ser rejeitado");
     }
 
     @Test
@@ -147,7 +224,7 @@ public class CalcMateriaPrimaTest {
                 diametroAcabado, 100.0, false, PadraoDimensional.METRICO);
         assertTrue(resultado.getDiametroMilimetros() == diametroEsperado,
                 "O diâmetro métrico deveria ser arredondado para o próximo milímetro");
-        assertTrue(resultado.getDiametroPolegadas().endsWith("mm"),
+        assertTrue(resultado.getDescricaoDiametro().endsWith("mm"),
                 "A descrição métrica deveria terminar com mm");
     }
 

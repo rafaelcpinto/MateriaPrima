@@ -49,11 +49,11 @@ public class CalcMateriaPrima{
 
         double sobremetalTabela = calcularSobremetal(diametroAcabado);
         double diametroNecessario = diametroAcabado + sobremetalTabela;
-        DiametroComercial selecionado;
+        DimensaoComercial selecionado;
         if (padrao == PadraoDimensional.METRICO) {
-            selecionado = selecionarDiametroMetrico(diametroNecessario);
+            selecionado = selecionarDimensaoMetrica(diametroNecessario);
         } else {
-            selecionado = selecionarDiametroPolegada(diametroNecessario, reduzir);
+            selecionado = selecionarDimensaoPolegada(diametroNecessario, reduzir);
         }
         double diametroSelecionado = selecionado.getMilimetros();
         double sobremetalCalculado = diametroSelecionado - diametroAcabado;
@@ -61,24 +61,69 @@ public class CalcMateriaPrima{
         return new ResultadoCilindrico(
                 diametroSelecionado,
                 selecionado.getDescricao(),
+                comprimento,
                 sobremetalCalculado,
                 massa
         );
     }
-    public ResultadoRetangular calcularRetangular(double a,double b,double c,boolean REDUZ){
-        double factor;
-        if(REDUZ){
-            factor =0.5;
+    public ResultadoRetangular calcularRetangular(
+            double largura,
+            double altura,
+            double comprimento,
+            boolean reduzir
+    ) {
+        return calcularRetangular(
+                largura,
+                altura,
+                comprimento,
+                reduzir,
+                PadraoDimensional.METRICO
+        );
+    }
+
+    public ResultadoRetangular calcularRetangular(
+            double larguraAcabada,
+            double alturaAcabada,
+            double comprimentoAcabado,
+            boolean reduzir,
+            PadraoDimensional padrao
+    ) {
+        if (padrao == null) {
+            throw new IllegalArgumentException(
+                    "O padrão dimensional é obrigatório."
+            );
         }
-        else{
-            factor =1.0;
-        }
-        double lado1 = (int)(1+a+calcularSobremetal(a)*factor);
-        double lado2 = (int)(1+b+calcularSobremetal(b)*factor);
-        double lado3 = (int)(1+c+calcularSobremetal(c)*factor);
-        
-        double massa = lado1*lado2*lado3*material.getDensidade();
-        return new ResultadoRetangular(lado1, lado2, lado3, massa);
+
+        double fator = reduzir ? 0.5 : 1.0;
+        DimensaoComercial largura = selecionarDimensao(
+                1.0 + larguraAcabada + calcularSobremetal(larguraAcabada) * fator,
+                reduzir,
+                padrao
+        );
+        DimensaoComercial altura = selecionarDimensao(
+                1.0 + alturaAcabada + calcularSobremetal(alturaAcabada) * fator,
+                reduzir,
+                padrao
+        );
+        DimensaoComercial comprimento = selecionarDimensao(
+                1.0 + comprimentoAcabado + calcularSobremetal(comprimentoAcabado) * fator,
+                reduzir,
+                padrao
+        );
+
+        double massa = largura.getMilimetros()
+                * altura.getMilimetros()
+                * comprimento.getMilimetros()
+                * material.getDensidade();
+        return new ResultadoRetangular(
+                largura.getMilimetros(),
+                altura.getMilimetros(),
+                comprimento.getMilimetros(),
+                largura.getDescricao(),
+                altura.getDescricao(),
+                comprimento.getDescricao(),
+                massa
+        );
     }
     private double calcularSobremetal(double dimensao) {
         if (!Double.isFinite(dimensao)) {
@@ -91,17 +136,27 @@ public class CalcMateriaPrima{
         }
         throw new IllegalArgumentException("Valor fora dos limites da tabela: " + dimensao);
    }
-    private DiametroComercial selecionarDiametroMetrico(double diametroNecessarioMm) {
-        if (!Double.isFinite(diametroNecessarioMm) || diametroNecessarioMm <= 0) {
+    private DimensaoComercial selecionarDimensao(
+            double dimensaoNecessariaMm,
+            boolean reduzir,
+            PadraoDimensional padrao
+    ) {
+        return padrao == PadraoDimensional.METRICO
+                ? selecionarDimensaoMetrica(dimensaoNecessariaMm)
+                : selecionarDimensaoPolegada(dimensaoNecessariaMm, reduzir);
+    }
+
+    private DimensaoComercial selecionarDimensaoMetrica(double dimensaoNecessariaMm) {
+        if (!Double.isFinite(dimensaoNecessariaMm) || dimensaoNecessariaMm <= 0) {
             throw new IllegalArgumentException(
-                    "Diâmetro necessário inválido: " + diametroNecessarioMm
+                    "Dimensão necessária inválida: " + dimensaoNecessariaMm
             );
         }
 
-        double diametroSelecionadoMm = Math.ceil(diametroNecessarioMm);
-        return new DiametroComercial(
-                diametroSelecionadoMm,
-                formatarMilimetros(diametroSelecionadoMm),
+        double dimensaoSelecionadaMm = Math.ceil(dimensaoNecessariaMm);
+        return new DimensaoComercial(
+                dimensaoSelecionadaMm,
+                formatarMilimetros(dimensaoSelecionadaMm),
                 PadraoDimensional.METRICO
         );
     }
@@ -114,28 +169,28 @@ public class CalcMateriaPrima{
         );
     }
 
-    private DiametroComercial selecionarDiametroPolegada(
-            double diametroNecessarioMm,
+    private DimensaoComercial selecionarDimensaoPolegada(
+            double dimensaoNecessariaMm,
             boolean reduzir
     ) {
-        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosPolegada();
-        int indice = localizarIntervalo(diametroNecessarioMm, diametros);
-        return diametros[reduzir ? indice : indice + 1];
+        DimensaoComercial[] dimensoes = TabelasMateriaPrima.dimensoesPolegada();
+        int indice = localizarIntervalo(dimensaoNecessariaMm, dimensoes);
+        return dimensoes[reduzir ? indice : indice + 1];
     }
-    private int localizarIntervalo(double valor, DiametroComercial[] diametros) {
-        if (!Double.isFinite(valor) || diametros == null || diametros.length < 2) {
+    private int localizarIntervalo(double valor, DimensaoComercial[] dimensoes) {
+        if (!Double.isFinite(valor) || dimensoes == null || dimensoes.length < 2) {
             throw new IllegalArgumentException("Dados inválidos para localizar o intervalo.");
         }
 
-        double primeiro = diametros[0].getMilimetros();
-        double ultimo = diametros[diametros.length - 1].getMilimetros();
+        double primeiro = dimensoes[0].getMilimetros();
+        double ultimo = dimensoes[dimensoes.length - 1].getMilimetros();
         if (valor < primeiro || valor >= ultimo) {
             throw new IllegalArgumentException("Valor fora dos limites da tabela: " + valor);
         }
 
-        for (int indice = 0; indice < diametros.length - 1; indice++) {
-            double atual = diametros[indice].getMilimetros();
-            double proximo = diametros[indice + 1].getMilimetros();
+        for (int indice = 0; indice < dimensoes.length - 1; indice++) {
+            double atual = dimensoes[indice].getMilimetros();
+            double proximo = dimensoes[indice + 1].getMilimetros();
             if (atual <= valor && valor < proximo) {
                 return indice;
             }

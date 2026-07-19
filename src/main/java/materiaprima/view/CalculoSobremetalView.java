@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -34,26 +35,37 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.Icon;
+import com.formdev.flatlaf.FlatClientProperties;
 import materiaprima.aplicacao.VersaoAplicacao;
 import materiaprima.controller.CalculoSobremetalController;
+import materiaprima.controller.ValidadorCalculo;
 import materiaprima.dados.TabelasMateriaPrima;
-import materiaprima.modelo.DiametroComercial;
 import materiaprima.modelo.Material;
 import materiaprima.modelo.PadraoDimensional;
+import materiaprima.view.components.CardPanel;
+import materiaprima.view.components.Icones;
 
 public class CalculoSobremetalView extends JFrame {
 
-    private static final Color COR_FUNDO = new Color(244, 246, 248);
+    private static final Color COR_FUNDO = new Color(244, 246, 249);
     private static final Color COR_PAINEL = Color.WHITE;
-    private static final Color COR_TITULO = new Color(31, 41, 55);
-    private static final Color COR_TEXTO = new Color(55, 65, 81);
-    private static final Color COR_TEXTO_SECUNDARIO = new Color(107, 114, 128);
+    private static final Color COR_TITULO = new Color(23, 32, 51);
+    private static final Color COR_TEXTO = new Color(52, 64, 84);
+    private static final Color COR_TEXTO_SECUNDARIO = new Color(102, 112, 133);
     private static final Color COR_PRINCIPAL = new Color(37, 99, 235);
     private static final Color COR_RESULTADO_DESTAQUE = new Color(30, 58, 95);
-    private static final Color COR_BORDA = new Color(203, 213, 225);
+    private static final Color COR_BORDA = new Color(217, 225, 234);
     private static final Color COR_ERRO = new Color(220, 38, 38);
     private static final int LARGURA_MAXIMA_IMAGEM_AJUDA = 820;
     private static final int ALTURA_MAXIMA_IMAGEM_AJUDA = 550;
+    private static final int LARGURA_CAMPO_RESULTADO = 100;
+    private static final int LARGURA_EQUIVALENTE_RESULTADO = 95;
+    private static final int LARGURA_ROTULO_RESULTADO = 165;
+    private static final int LARGURA_CAMPO_ENTRADA = 150;
+    private static final int LARGURA_ROTULO_ENTRADA = 175;
+    private static final int LARGURA_CARD_ENTRADA = 425;
+    private static final int ALTURA_CAMPO_ENTRADA = 38;
     private static final String NOME_MATERIAL_PERSONALIZADO = "Densidade personalizada";
     private static final String AJUDA_DIAMETRO = criarTextoAjudaDiametro();
     private static final String AJUDA_COMPRIMENTO =
@@ -75,7 +87,7 @@ public class CalculoSobremetalView extends JFrame {
     private final JRadioButton perfilRetangular = new JRadioButton("Retangular");
     private final JComboBox<Material> material =
             new JComboBox<Material>(criarListaMateriais());
-    private final JLabel rotuloPadraoDiametro = new JLabel("Padrão do diâmetro");
+    private final JLabel rotuloPadraoDiametro = new JLabel("Padrão dimensional");
     private final JRadioButton padraoMetrico = new JRadioButton("Milímetro");
     private final JRadioButton padraoPolegada = new JRadioButton("Polegada", true);
     private final JPanel opcoesPadraoDiametro =
@@ -98,6 +110,7 @@ public class CalculoSobremetalView extends JFrame {
     private final JLabel ajudaValor2 = criarAjuda(AJUDA_COMPRIMENTO);
     private final JLabel ajudaValor3 = criarAjuda(AJUDA_ADICIONAL);
     private final JLabel mensagem = new JLabel(" ");
+    private final PainelVisualizacao painelVisualizacao = new PainelVisualizacao();
 
     private final JLabel rotuloResultado1 = new JLabel();
     private final JLabel rotuloResultado2 = new JLabel();
@@ -106,12 +119,34 @@ public class CalculoSobremetalView extends JFrame {
     private final JTextField resultado2 = criarValorResultado();
     private final JTextField resultado3 = criarValorResultado();
     private final JTextField resultadoMassa = criarValorResultado();
+    private final JLabel equivalenteDiametro = new JLabel();
+    private final JLabel equivalenteResultado2 = new JLabel();
+    private final JLabel equivalenteResultado3 = new JLabel();
 
     public CalculoSobremetalView() {
         super("Cálculo de sobremetal");
         controller = new CalculoSobremetalController(this);
         configurarJanela();
+        configurarComponentes();
         montarInterface();
+    }
+
+    private void configurarComponentes() {
+        Dimension tamanhoEntrada = new Dimension(
+                LARGURA_CAMPO_ENTRADA, ALTURA_CAMPO_ENTRADA);
+        JTextField[] campos = {valor1, valor2, valor3, densidadePersonalizada};
+        for (JTextField campo : campos) {
+            campo.putClientProperty(FlatClientProperties.STYLE,
+                    "arc: 8; borderColor: #D0D5DD; focusedBorderColor: #2563EB");
+            campo.setPreferredSize(tamanhoEntrada);
+            campo.setMinimumSize(tamanhoEntrada);
+        }
+        material.putClientProperty(FlatClientProperties.STYLE,
+                "arc: 8; borderColor: #D0D5DD; focusedBorderColor: #2563EB");
+        material.setPreferredSize(tamanhoEntrada);
+        material.setMinimumSize(tamanhoEntrada);
+        painelDensidade.setPreferredSize(tamanhoEntrada);
+        painelDensidade.setMinimumSize(tamanhoEntrada);
     }
 
     private void configurarJanela() {
@@ -120,17 +155,53 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private void montarInterface() {
-        JPanel conteudo = new JPanel(new BorderLayout(0, 12));
+        JPanel conteudo = new JPanel(new BorderLayout(0, 10));
         conteudo.setBackground(COR_FUNDO);
-        conteudo.setBorder(BorderFactory.createEmptyBorder(16, 22, 10, 22));
+        conteudo.setBorder(BorderFactory.createEmptyBorder(18, 24, 10, 24));
         conteudo.add(criarCabecalho(), BorderLayout.NORTH);
 
-        JPanel centro = new JPanel();
+        JPanel centro = new JPanel(new GridBagLayout());
         centro.setBackground(COR_FUNDO);
-        centro.setLayout(new javax.swing.BoxLayout(centro, javax.swing.BoxLayout.Y_AXIS));
-        centro.add(criarPainelEntrada());
-        centro.add(javax.swing.Box.createVerticalStrut(12));
-        centro.add(criarPainelResultado());
+        JPanel painelEntrada = criarPainelEntrada();
+        painelEntrada.setPreferredSize(new Dimension(
+                LARGURA_CARD_ENTRADA,
+                painelEntrada.getPreferredSize().height
+        ));
+        painelEntrada.setMinimumSize(new Dimension(LARGURA_CARD_ENTRADA, 0));
+        JPanel colunaDireita = new JPanel(new GridBagLayout());
+        colunaDireita.setBackground(COR_FUNDO);
+        GridBagConstraints resultadoDireita = new GridBagConstraints();
+        resultadoDireita.gridx = 0;
+        resultadoDireita.gridy = 0;
+        resultadoDireita.weightx = 1.0;
+        resultadoDireita.fill = GridBagConstraints.HORIZONTAL;
+        resultadoDireita.insets = new Insets(0, 0, 12, 0);
+        colunaDireita.add(criarPainelResultado(), resultadoDireita);
+        GridBagConstraints visualizacaoDireita = new GridBagConstraints();
+        visualizacaoDireita.gridx = 0;
+        visualizacaoDireita.gridy = 1;
+        visualizacaoDireita.weightx = 1.0;
+        visualizacaoDireita.weighty = 1.0;
+        visualizacaoDireita.fill = GridBagConstraints.BOTH;
+        colunaDireita.add(criarPainelVisualizacao(), visualizacaoDireita);
+
+        GridBagConstraints colunaEntrada = new GridBagConstraints();
+        colunaEntrada.gridx = 0;
+        colunaEntrada.gridy = 0;
+        colunaEntrada.weightx = 0.0;
+        colunaEntrada.weighty = 1.0;
+        colunaEntrada.fill = GridBagConstraints.BOTH;
+        colunaEntrada.insets = new Insets(0, 0, 0, 8);
+        centro.add(painelEntrada, colunaEntrada);
+
+        GridBagConstraints colunaResultado = new GridBagConstraints();
+        colunaResultado.gridx = 1;
+        colunaResultado.gridy = 0;
+        colunaResultado.weightx = 0.58;
+        colunaResultado.weighty = 1.0;
+        colunaResultado.fill = GridBagConstraints.BOTH;
+        colunaResultado.insets = new Insets(0, 8, 0, 0);
+        centro.add(colunaDireita, colunaResultado);
         conteudo.add(centro, BorderLayout.CENTER);
         conteudo.add(criarRodape(), BorderLayout.SOUTH);
 
@@ -138,7 +209,7 @@ public class CalculoSobremetalView extends JFrame {
         getRootPane().setDefaultButton(botaoCalcular);
         atualizarPerfil();
         pack();
-        setSize(new Dimension(getWidth() + 70, getHeight()));
+        setSize(new Dimension(950, 700));
         setLocationRelativeTo(null);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -154,12 +225,12 @@ public class CalculoSobremetalView extends JFrame {
         painel.setLayout(new javax.swing.BoxLayout(painel, javax.swing.BoxLayout.Y_AXIS));
 
         JLabel titulo = new JLabel("Cálculo de sobremetal");
-        titulo.setFont(titulo.getFont().deriveFont(Font.BOLD, 23f));
+        titulo.setFont(titulo.getFont().deriveFont(Font.BOLD, 27f));
         titulo.setForeground(COR_TITULO);
         titulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel subtitulo = new JLabel("Baseado na norma DIN 7527");
-        subtitulo.setFont(subtitulo.getFont().deriveFont(Font.PLAIN, 13f));
+        subtitulo.setFont(subtitulo.getFont().deriveFont(Font.PLAIN, 14f));
         subtitulo.setForeground(COR_TEXTO_SECUNDARIO);
         subtitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -237,8 +308,8 @@ public class CalculoSobremetalView extends JFrame {
     private JPanel criarPainelEntrada() {
         JPanel painel = new JPanel(new GridBagLayout());
         painel.setBackground(COR_PAINEL);
-        painel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(COR_BORDA), "Dados de entrada"));
+        painel.setOpaque(false);
+        painel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         painel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         ButtonGroup grupoPerfil = new ButtonGroup();
@@ -276,10 +347,11 @@ public class CalculoSobremetalView extends JFrame {
         rotuloMaterial.setLabelFor(material);
         rotuloDensidade.setLabelFor(densidadePersonalizada);
         rotuloPadraoDiametro.setLabelFor(padraoPolegada);
-        String ajudaPadrao = "<html>Define como o diâmetro da matéria-prima será "
-                + "selecionado.<br><br>Milímetro: arredonda para o próximo milímetro "
-                + "inteiro.<br><br>Polegada: seleciona o próximo diâmetro disponível na "
-                + "tabela imperial.<br><br>As entradas continuam sendo informadas em "
+        String ajudaPadrao = "<html>Define como as dimensões comerciais da matéria-prima "
+                + "serão selecionadas.<br><br><b>Milímetro:</b> arredonda cada dimensão "
+                + "necessária para o próximo milímetro inteiro.<br><b>Polegada:</b> "
+                + "seleciona, para cada dimensão, o próximo valor disponível na tabela "
+                + "imperial.<br><br>As entradas continuam sendo informadas em "
                 + "milímetros.</html>";
         rotuloPadraoDiametro.setToolTipText(ajudaPadrao);
         padraoMetrico.setToolTipText(ajudaPadrao);
@@ -300,14 +372,31 @@ public class CalculoSobremetalView extends JFrame {
         otimizar.setForeground(COR_TEXTO);
         GridBagConstraints opcao = restricoes(0, 7);
         opcao.gridwidth = 2;
-        opcao.insets = new Insets(12, 4, 4, 4);
+        opcao.insets = new Insets(8, 4, 2, 4);
         painel.add(otimizar, opcao);
 
         botaoCalcular.setFont(botaoCalcular.getFont().deriveFont(Font.BOLD));
         botaoCalcular.setBackground(COR_PRINCIPAL);
         botaoCalcular.setForeground(Color.WHITE);
+        botaoCalcular.setIcon(Icones.carregar("calculator", 17));
+        botaoCalcular.setIconTextGap(8);
+        botaoCalcular.putClientProperty(FlatClientProperties.STYLE,
+                "borderWidth: 0; focusWidth: 1; innerFocusWidth: 0; arc: 10");
+        botaoCalcular.putClientProperty("JButton.buttonType", "roundRect");
+        botaoCalcular.setOpaque(true);
+        botaoCalcular.setContentAreaFilled(true);
+        botaoCalcular.setBorderPainted(true);
+        botaoCalcular.setFocusPainted(true);
         botaoCalcular.addActionListener(evento -> calcular());
+        botaoLimpar.setIcon(Icones.carregar("clear", 17));
+        botaoLimpar.setIconTextGap(8);
+        botaoLimpar.putClientProperty(FlatClientProperties.STYLE,
+                "background: #FFFFFF; foreground: #344054; borderColor: #D0D5DD; arc: 10");
+        botaoLimpar.putClientProperty("JButton.buttonType", "roundRect");
         botaoLimpar.addActionListener(evento -> limpar());
+        Dimension tamanhoBotao = new Dimension(135, 42);
+        botaoCalcular.setPreferredSize(tamanhoBotao);
+        botaoLimpar.setPreferredSize(tamanhoBotao);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         botoes.setBackground(COR_PAINEL);
@@ -317,7 +406,7 @@ public class CalculoSobremetalView extends JFrame {
         GridBagConstraints areaBotoes = restricoes(0, 8);
         areaBotoes.gridwidth = 2;
         areaBotoes.fill = GridBagConstraints.HORIZONTAL;
-        areaBotoes.insets = new Insets(12, 4, 2, 4);
+        areaBotoes.insets = new Insets(8, 4, 0, 4);
         painel.add(botoes, areaBotoes);
 
         mensagem.setForeground(COR_ERRO);
@@ -325,12 +414,30 @@ public class CalculoSobremetalView extends JFrame {
         GridBagConstraints areaMensagem = restricoes(0, 9);
         areaMensagem.gridwidth = 2;
         areaMensagem.fill = GridBagConstraints.HORIZONTAL;
+        areaMensagem.insets = new Insets(2, 4, 0, 4);
         painel.add(mensagem, areaMensagem);
 
         rotuloValor1.setLabelFor(valor1);
         rotuloValor2.setLabelFor(valor2);
         rotuloValor3.setLabelFor(valor3);
-        return painel;
+        aplicarFonteCompacta(painel);
+        JPanel alinhadoAoTopo = new JPanel(new BorderLayout());
+        alinhadoAoTopo.setOpaque(false);
+        alinhadoAoTopo.add(painel, BorderLayout.NORTH);
+        return criarCard("Dados de entrada", "input", alinhadoAoTopo);
+    }
+
+    private void aplicarFonteCompacta(Component componente) {
+        if (componente instanceof JLabel
+                || componente instanceof JRadioButton
+                || componente instanceof JCheckBox) {
+            componente.setFont(componente.getFont().deriveFont(12f));
+        }
+        if (componente instanceof Container) {
+            for (Component filho : ((Container) componente).getComponents()) {
+                aplicarFonteCompacta(filho);
+            }
+        }
     }
 
     private static Material[] criarListaMateriais() {
@@ -343,15 +450,14 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private static String criarTextoAjudaDiametro() {
-        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosPolegada();
-        DiametroComercial maior = diametros[diametros.length - 1];
-        String milimetros = String.format(
-                new Locale("pt", "BR"), "%.1f", maior.getMilimetros());
+        double limite = new ValidadorCalculo().limiteDiametroCilindrico();
+        String limiteMilimetros = String.format(
+                new Locale("pt", "BR"), "%.1f", limite);
         return "Informe o maior diâmetro final da peça após a usinagem. A aplicação "
                 + "utilizará esse valor para selecionar o diâmetro comercial da "
                 + "matéria-prima e calcular o sobremetal."
-                + "<br><br>Limite da tabela = " + maior.getDescricao() + "\" ("
-                + milimetros + " mm)";
+                + "<br><br>O diâmetro acabado deve ser menor que "
+                + limiteMilimetros + " mm.";
     }
 
     private void configurarDensidade() {
@@ -411,15 +517,78 @@ public class CalculoSobremetalView extends JFrame {
     private JPanel criarPainelResultado() {
         JPanel painel = new JPanel(new GridBagLayout());
         painel.setBackground(COR_PAINEL);
-        painel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(COR_BORDA), "Resultado"));
+        painel.setOpaque(false);
+        painel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         painel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        adicionarLinhaResultado(painel, 0, rotuloResultado1, resultado1);
-        adicionarLinhaResultado(painel, 1, rotuloResultado2, resultado2);
-        adicionarLinhaResultado(painel, 2, rotuloResultado3, resultado3);
-        adicionarLinhaResultado(painel, 3, new JLabel("Massa estimada"), resultadoMassa);
-        return painel;
+        configurarEquivalente(equivalenteDiametro);
+        configurarEquivalente(equivalenteResultado2);
+        configurarEquivalente(equivalenteResultado3);
+        adicionarLinhaResultadoCompacta(painel, 0, rotuloResultado1, resultado1,
+                equivalenteDiametro, true);
+        adicionarLinhaResultadoCompacta(painel, 1, rotuloResultado2, resultado2,
+                equivalenteResultado2, true);
+        adicionarLinhaResultadoCompacta(painel, 2, rotuloResultado3, resultado3,
+                equivalenteResultado3, true);
+        adicionarLinhaResultadoCompacta(painel, 3, new JLabel("Massa estimada"),
+                resultadoMassa, null, false);
+        return criarCard(
+                "Resultado",
+                "result",
+                painel,
+                new Insets(6, 12, 7, 12)
+        );
+    }
+
+    private void adicionarLinhaResultadoCompacta(
+            JPanel painel,
+            int linha,
+            JLabel rotulo,
+            JTextField valor,
+            JLabel equivalente,
+            boolean separador
+    ) {
+        JPanel conteudoLinha = new JPanel(new GridBagLayout());
+        conteudoLinha.setName("linhaResultado");
+        conteudoLinha.setOpaque(false);
+        conteudoLinha.setBorder(BorderFactory.createCompoundBorder(
+                separador
+                        ? BorderFactory.createMatteBorder(0, 0, 1, 0, COR_BORDA)
+                        : BorderFactory.createEmptyBorder(),
+                BorderFactory.createEmptyBorder(3, 6, 3, 6)));
+
+        rotulo.setForeground(COR_TEXTO);
+        JPanel areaRotulo = new JPanel(new BorderLayout());
+        areaRotulo.setOpaque(false);
+        Dimension tamanhoRotulo = new Dimension(
+                LARGURA_ROTULO_RESULTADO,
+                Math.max(28, rotulo.getPreferredSize().height)
+        );
+        areaRotulo.setPreferredSize(tamanhoRotulo);
+        areaRotulo.setMinimumSize(tamanhoRotulo);
+        areaRotulo.add(rotulo, BorderLayout.CENTER);
+
+        GridBagConstraints colunaRotulo = restricoes(0, 0);
+        colunaRotulo.weightx = 0.0;
+        colunaRotulo.fill = GridBagConstraints.NONE;
+        colunaRotulo.insets = new Insets(0, 0, 0, 8);
+        conteudoLinha.add(areaRotulo, colunaRotulo);
+
+        JPanel areaValor = equivalente == null
+                ? criarResultadoComCopia(valor)
+                : criarResultadoComCopia(valor, criarEspacoEquivalente(equivalente));
+        GridBagConstraints colunaValor = restricoes(1, 0);
+        colunaValor.weightx = 1.0;
+        colunaValor.fill = GridBagConstraints.HORIZONTAL;
+        colunaValor.insets = new Insets(0, 0, 0, 0);
+        conteudoLinha.add(areaValor, colunaValor);
+
+        GridBagConstraints restricaoLinha = new GridBagConstraints();
+        restricaoLinha.gridx = 0;
+        restricaoLinha.gridy = linha;
+        restricaoLinha.weightx = 1.0;
+        restricaoLinha.fill = GridBagConstraints.HORIZONTAL;
+        painel.add(conteudoLinha, restricaoLinha);
     }
 
     private JPanel criarRodape() {
@@ -531,7 +700,11 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private JLabel criarAjuda(String texto) {
-        final JLabel ajuda = new JLabel("?");
+        Icon iconeAjuda = Icones.carregar("help", 14);
+        final JLabel ajuda = new JLabel(iconeAjuda);
+        if (iconeAjuda == null) {
+            ajuda.setText("?");
+        }
         ajuda.setToolTipText(formatarTooltip(texto));
         ajuda.setHorizontalAlignment(SwingConstants.CENTER);
         ajuda.setFont(ajuda.getFont().deriveFont(Font.BOLD));
@@ -573,14 +746,26 @@ public class CalculoSobremetalView extends JFrame {
 
     private void adicionarLinha(JPanel painel, int linha, Component rotulo, Component componente) {
         rotulo.setForeground(COR_TEXTO);
+        JPanel areaRotulo = new JPanel(new BorderLayout());
+        areaRotulo.setOpaque(false);
+        Dimension tamanhoRotulo = new Dimension(
+                LARGURA_ROTULO_ENTRADA,
+                Math.max(ALTURA_CAMPO_ENTRADA, rotulo.getPreferredSize().height)
+        );
+        areaRotulo.setPreferredSize(tamanhoRotulo);
+        areaRotulo.setMinimumSize(tamanhoRotulo);
+        areaRotulo.add(rotulo, BorderLayout.CENTER);
+
         GridBagConstraints esquerda = restricoes(0, linha);
         esquerda.weightx = 0.0;
         esquerda.anchor = GridBagConstraints.LINE_START;
-        painel.add(rotulo, esquerda);
+        esquerda.insets = new Insets(5, 6, 5, 6);
+        painel.add(areaRotulo, esquerda);
 
         GridBagConstraints direita = restricoes(1, linha);
         direita.weightx = 1.0;
         direita.fill = GridBagConstraints.HORIZONTAL;
+        direita.insets = new Insets(5, 6, 5, 6);
         painel.add(componente, direita);
     }
 
@@ -590,25 +775,182 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private JPanel criarResultadoComCopia(final JTextField resultado) {
-        JPanel painel = new JPanel(new BorderLayout(5, 0));
+        return criarResultadoComCopia(resultado, criarEspacoEquivalente(null));
+    }
+
+    private JPanel criarResultadoComCopia(
+            final JTextField resultado,
+            JPanel espacoEquivalente
+    ) {
+        JPanel painel = new JPanel(new GridBagLayout());
         painel.setBackground(COR_PAINEL);
-        painel.add(resultado, BorderLayout.CENTER);
-        painel.add(criarIconeCopiar(resultado), BorderLayout.EAST);
+
+        GridBagConstraints campo = restricoes(0, 0);
+        campo.insets = new Insets(0, 0, 0, 0);
+        campo.anchor = GridBagConstraints.BASELINE_LEADING;
+        painel.add(resultado, campo);
+
+        GridBagConstraints equivalente = restricoes(1, 0);
+        equivalente.insets = new Insets(0, 6, 0, 0);
+        equivalente.anchor = GridBagConstraints.BASELINE_LEADING;
+        painel.add(espacoEquivalente, equivalente);
+
+        GridBagConstraints preenchimento = restricoes(2, 0);
+        preenchimento.weightx = 1.0;
+        preenchimento.fill = GridBagConstraints.HORIZONTAL;
+        painel.add(javax.swing.Box.createHorizontalGlue(), preenchimento);
+
+        GridBagConstraints copia = restricoes(3, 0);
+        copia.anchor = GridBagConstraints.LINE_END;
+        copia.insets = new Insets(0, 8, 0, 2);
+        painel.add(criarIconeCopiar(resultado), copia);
         return painel;
     }
 
-    private JLabel criarIconeCopiar(final JTextField resultado) {
-        final JLabel copiar = new JLabel("⧉");
-        copiar.setFont(copiar.getFont().deriveFont(Font.BOLD, 13f));
+    private JPanel criarPainelVisualizacao() {
+        JPanel painel = new JPanel(new BorderLayout());
+        painel.setBackground(COR_PAINEL);
+        painel.setOpaque(false);
+        painel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        painel.add(painelVisualizacao, BorderLayout.CENTER);
+        return criarCard("Visualização dinâmica", "visualization", painel);
+    }
+
+    private JPanel criarCard(String titulo, String nomeIcone, JPanel conteudo) {
+        return criarCard(
+                titulo,
+                nomeIcone,
+                conteudo,
+                new Insets(12, 14, 14, 14)
+        );
+    }
+
+    private JPanel criarCard(
+            String titulo,
+            String nomeIcone,
+            JPanel conteudo,
+            Insets margensCorpo
+    ) {
+        CardPanel card = new CardPanel();
+        card.setName("card." + nomeIcone);
+        card.putClientProperty("card.titulo", titulo);
+        card.setLayout(new BorderLayout());
+
+        JPanel cabecalho = new JPanel(new FlowLayout(FlowLayout.LEFT, 9, 0));
+        cabecalho.setOpaque(false);
+        cabecalho.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, COR_BORDA),
+                BorderFactory.createEmptyBorder(14, 16, 13, 16)));
+        JLabel rotulo = new JLabel(titulo, Icones.carregar(nomeIcone, 17),
+                SwingConstants.LEFT);
+        rotulo.setIconTextGap(9);
+        rotulo.setFont(rotulo.getFont().deriveFont(Font.BOLD, 15f));
+        rotulo.setForeground(COR_RESULTADO_DESTAQUE);
+        cabecalho.add(rotulo);
+
+        JPanel corpo = new JPanel(new BorderLayout());
+        corpo.setOpaque(false);
+        corpo.setBorder(BorderFactory.createEmptyBorder(
+                margensCorpo.top,
+                margensCorpo.left,
+                margensCorpo.bottom,
+                margensCorpo.right
+        ));
+        corpo.add(conteudo, BorderLayout.CENTER);
+        card.add(cabecalho, BorderLayout.NORTH);
+        card.add(corpo, BorderLayout.CENTER);
+        return card;
+    }
+
+    private JPanel criarCaixaResultado(JTextField resultado) {
+        JPanel caixa = new JPanel(new BorderLayout());
+        caixa.setBackground(COR_PAINEL);
+        Dimension tamanho = new Dimension(
+                LARGURA_CAMPO_RESULTADO,
+                resultado.getPreferredSize().height
+        );
+        caixa.setPreferredSize(tamanho);
+        caixa.setMinimumSize(tamanho);
+        caixa.setMaximumSize(tamanho);
+        caixa.add(resultado, BorderLayout.CENTER);
+        return caixa;
+    }
+
+    private JPanel criarResultadoDiametro() {
+        configurarEquivalente(equivalenteDiametro);
+        return criarResultadoComCopia(
+                resultado1,
+                criarEspacoEquivalente(equivalenteDiametro)
+        );
+    }
+
+    private JPanel criarResultadoComEquivalente(
+            JTextField resultado,
+            JLabel equivalente
+    ) {
+        configurarEquivalente(equivalente);
+        return criarResultadoComCopia(
+                resultado,
+                criarEspacoEquivalente(equivalente)
+        );
+    }
+
+    private void configurarEquivalente(JLabel equivalente) {
+        equivalente.setForeground(new Color(71, 84, 103));
+        equivalente.setFont(equivalente.getFont().deriveFont(Font.BOLD, 11.5f));
+        equivalente.setVerticalAlignment(SwingConstants.CENTER);
+        equivalente.setToolTipText("Equivalente do valor comercial em milímetros.");
+        equivalente.setVisible(false);
+    }
+
+    private JPanel criarEspacoEquivalente(Component conteudo) {
+        JPanel espaco = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0)) {
+            @Override
+            public int getBaseline(int largura, int altura) {
+                if (getComponentCount() == 0) {
+                    return super.getBaseline(largura, altura);
+                }
+                Component componente = getComponent(0);
+                Dimension tamanho = componente.getPreferredSize();
+                int linhaBase = componente.getBaseline(tamanho.width, tamanho.height);
+                return linhaBase < 0
+                        ? super.getBaseline(largura, altura)
+                        : (altura - tamanho.height) / 2 + linhaBase;
+            }
+        };
+        espaco.setBackground(COR_PAINEL);
+        Dimension tamanho = new Dimension(
+                LARGURA_EQUIVALENTE_RESULTADO,
+                resultado1.getPreferredSize().height
+        );
+        espaco.setPreferredSize(tamanho);
+        espaco.setMinimumSize(tamanho);
+        if (conteudo != null) {
+            espaco.add(conteudo);
+        }
+        return espaco;
+    }
+
+    private JButton criarIconeCopiar(final JTextField resultado) {
+        Icon icone = Icones.carregar("copy", 15);
+        final JButton copiar = new JButton(icone);
+        if (icone == null) {
+            copiar.setText("Copiar");
+        }
+        copiar.setHorizontalAlignment(SwingConstants.CENTER);
+        Dimension tamanho = new Dimension(28, 28);
+        copiar.setPreferredSize(tamanho);
+        copiar.setMinimumSize(tamanho);
+        copiar.setMaximumSize(tamanho);
+        copiar.setMargin(new Insets(0, 0, 0, 0));
         copiar.setForeground(COR_PRINCIPAL);
         copiar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        copiar.setToolTipText("Copiar este valor");
-        copiar.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent evento) {
-                copiarResultado(resultado);
-            }
-        });
+        copiar.setToolTipText("Copiar");
+        copiar.setFocusable(true);
+        copiar.putClientProperty("JButton.buttonType", "toolBarButton");
+        copiar.putClientProperty(FlatClientProperties.STYLE,
+                "borderWidth: 0; focusWidth: 1; arc: 8");
+        copiar.addActionListener(evento -> copiarResultado(resultado));
         return copiar;
     }
 
@@ -629,14 +971,22 @@ public class CalculoSobremetalView extends JFrame {
         GridBagConstraints restricoes = new GridBagConstraints();
         restricoes.gridx = coluna;
         restricoes.gridy = linha;
-        restricoes.insets = new Insets(4, 8, 4, 8);
+        restricoes.insets = new Insets(7, 8, 7, 8);
         restricoes.anchor = GridBagConstraints.LINE_START;
         return restricoes;
     }
 
     private JTextField criarValorResultado() {
         JTextField valor = new JTextField("—", 14);
+        Dimension tamanho = new Dimension(
+                LARGURA_CAMPO_RESULTADO,
+                valor.getPreferredSize().height
+        );
+        valor.setPreferredSize(tamanho);
+        valor.setMinimumSize(tamanho);
         valor.setEditable(false);
+        valor.setFocusable(true);
+        valor.setHorizontalAlignment(SwingConstants.LEFT);
         valor.setBorder(null);
         valor.setOpaque(false);
         valor.setForeground(COR_TEXTO);
@@ -644,10 +994,7 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private void atualizarPerfil() {
-        boolean cilindrico = isPerfilCilindrico();
-        rotuloPadraoDiametro.setVisible(cilindrico);
-        opcoesPadraoDiametro.setVisible(cilindrico);
-        if (cilindrico) {
+        if (isPerfilCilindrico()) {
             rotuloValor1.setText("Diâmetro acabado (mm)");
             rotuloValor2.setText("Comprimento da peça (mm)");
             rotuloValor3.setText("Adicional para fixação (mm)");
@@ -662,7 +1009,7 @@ public class CalculoSobremetalView extends JFrame {
             atualizarImagemAjuda(ajudaValor3, "/images/sobremetal-comprimento.png",
                     "Ajuda — Comprimento e fixação");
             rotuloResultado1.setText("Diâmetro comercial");
-            rotuloResultado2.setText("Equivalente");
+            rotuloResultado2.setText("Comprimento total");
             rotuloResultado3.setText("Sobremetal por lado");
         } else {
             rotuloValor1.setText("Largura (mm)");
@@ -686,7 +1033,7 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private void destacarResultado(JTextField resultado) {
-        resultado.setFont(resultado.getFont().deriveFont(Font.BOLD, 15f));
+        resultado.setFont(resultado.getFont().deriveFont(Font.BOLD, 14f));
         resultado.setForeground(COR_RESULTADO_DESTAQUE);
     }
 
@@ -710,6 +1057,10 @@ public class CalculoSobremetalView extends JFrame {
         resultado2.setText("—");
         resultado3.setText("—");
         resultadoMassa.setText("—");
+        equivalenteDiametro.setText("");
+        equivalenteDiametro.setVisible(false);
+        limparEquivalente(equivalenteResultado2);
+        limparEquivalente(equivalenteResultado3);
         normalizarResultado(resultado1);
         normalizarResultado(resultado2);
         normalizarResultado(resultado3);
@@ -737,7 +1088,7 @@ public class CalculoSobremetalView extends JFrame {
         return otimizar.isSelected();
     }
 
-    public PadraoDimensional getPadraoDimensionalCilindrico() {
+    public PadraoDimensional getPadraoDimensional() {
         if (padraoMetrico.isSelected()) {
             return PadraoDimensional.METRICO;
         }
@@ -745,6 +1096,10 @@ public class CalculoSobremetalView extends JFrame {
             padraoPolegada.setSelected(true);
         }
         return PadraoDimensional.POLEGADA;
+    }
+
+    public PadraoDimensional getPadraoDimensionalCilindrico() {
+        return getPadraoDimensional();
     }
 
     public Material getMaterialSelecionado() {
@@ -763,11 +1118,114 @@ public class CalculoSobremetalView extends JFrame {
         resultado2.setText(segundo);
         resultado3.setText(terceiro);
         resultadoMassa.setText(massa);
+        equivalenteDiametro.setText("");
+        equivalenteDiametro.setVisible(false);
+        limparEquivalente(equivalenteResultado2);
+        limparEquivalente(equivalenteResultado3);
         if (isPerfilCilindrico()) {
             destacarResultado(resultado1);
         }
+        destacarResultado(resultado2);
+        destacarResultado(resultado3);
         destacarResultado(resultadoMassa);
         mensagem.setText(" ");
+        painelVisualizacao.limpar(isPerfilCilindrico());
+    }
+
+    public void mostrarResultadoCilindrico(
+            String diametroPrincipal,
+            String equivalenteMilimetros,
+            String comprimentoTotal,
+            String sobremetalPorBanda,
+            String massa
+    ) {
+        resultado1.setText(diametroPrincipal);
+        resultado2.setText(comprimentoTotal);
+        resultado3.setText(sobremetalPorBanda);
+        resultadoMassa.setText(massa);
+
+        boolean mostrarEquivalente = equivalenteMilimetros != null
+                && !equivalenteMilimetros.trim().isEmpty();
+        equivalenteDiametro.setText(mostrarEquivalente ? equivalenteMilimetros : "");
+        equivalenteDiametro.setVisible(mostrarEquivalente);
+
+        destacarResultado(resultado1);
+        destacarResultado(resultado2);
+        destacarResultado(resultado3);
+        destacarResultado(resultadoMassa);
+        mensagem.setText(" ");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarResultadoRetangular(
+            String larguraPrincipal,
+            String larguraEquivalente,
+            String alturaPrincipal,
+            String alturaEquivalente,
+            String comprimentoPrincipal,
+            String comprimentoEquivalente,
+            String massa
+    ) {
+        resultado1.setText(larguraPrincipal);
+        resultado2.setText(alturaPrincipal);
+        resultado3.setText(comprimentoPrincipal);
+        resultadoMassa.setText(massa);
+        atualizarEquivalente(equivalenteDiametro, larguraEquivalente);
+        atualizarEquivalente(equivalenteResultado2, alturaEquivalente);
+        atualizarEquivalente(equivalenteResultado3, comprimentoEquivalente);
+        destacarResultado(resultado1);
+        destacarResultado(resultado2);
+        destacarResultado(resultado3);
+        destacarResultado(resultadoMassa);
+        mensagem.setText(" ");
+        revalidate();
+        repaint();
+    }
+
+    public void mostrarVisualizacaoCilindrica(
+            String diametroBruto,
+            String diametroFinal,
+            String sobremetalPorBanda,
+            String comprimentoFinal,
+            String comprimentoTotal
+    ) {
+        painelVisualizacao.mostrarCilindrico(
+                diametroBruto,
+                diametroFinal,
+                sobremetalPorBanda,
+                comprimentoFinal,
+                comprimentoTotal
+        );
+    }
+
+    public void mostrarVisualizacaoRetangular(
+            String larguraBruta,
+            String alturaBruta,
+            String comprimentoBruto,
+            String larguraFinal,
+            String alturaFinal,
+            String comprimentoFinal
+    ) {
+        painelVisualizacao.mostrarRetangular(
+                larguraBruta,
+                alturaBruta,
+                comprimentoBruto,
+                larguraFinal,
+                alturaFinal,
+                comprimentoFinal
+        );
+    }
+
+    private void atualizarEquivalente(JLabel equivalente, String texto) {
+        boolean mostrar = texto != null && !texto.trim().isEmpty();
+        equivalente.setText(mostrar ? texto : "");
+        equivalente.setVisible(mostrar);
+    }
+
+    private void limparEquivalente(JLabel equivalente) {
+        equivalente.setText("");
+        equivalente.setVisible(false);
     }
 
     public void mostrarValorInvalido() {

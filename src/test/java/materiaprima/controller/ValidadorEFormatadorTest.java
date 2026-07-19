@@ -28,6 +28,15 @@ public class ValidadorEFormatadorTest {
                 "Lados dentro dos limites deveriam ser aceitos");
         assertTrue(!validador.valoresRetangularesValidos(0.0, 500.0, 1000.0),
                 "Lado no limite máximo deveria ser rejeitado");
+        assertTrue(validador.valoresRetangularesValidos(
+                        918.0, 50.0, 50.0, false, PadraoDimensional.POLEGADA),
+                "Dimensão imperial com sobremetal dentro da tabela deveria ser aceita");
+        assertTrue(!validador.valoresRetangularesValidos(
+                        918.2, 50.0, 50.0, false, PadraoDimensional.POLEGADA),
+                "A validação imperial deve considerar sobremetal, fator e acréscimo");
+        assertTrue(!validador.valoresRetangularesValidos(
+                        50.0, 50.0, 50.0, false, null),
+                "Padrão retangular nulo deveria ser rejeitado");
     }
 
     @Test

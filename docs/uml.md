@@ -1,8 +1,7 @@
 # UML do MateriaPrima
 
-Os diagramas abaixo representam a arquitetura atual da aplicação. Eles usam
-[Mermaid](https://mermaid.js.org/) e podem ser visualizados diretamente em
-renderizadores Markdown compatíveis, incluindo o GitHub.
+Os diagramas representam a estrutura atual da aplicação e usam
+[Mermaid](https://mermaid.js.org/).
 
 ## Diagrama de classes
 
@@ -10,144 +9,149 @@ renderizadores Markdown compatíveis, incluindo o GitHub.
 classDiagram
     direction LR
 
-    namespace Aplicacao {
-        class Main {
-            +main(String[] args)$ void
-            -configurarAparencia()$ void
-        }
-
-        class VersaoAplicacao {
-            +ATUAL$ String
-        }
+    class Main {
+        +main(String[] args)$ void
     }
 
-    namespace View {
-        class CalculoSobremetalView {
-            -controller CalculoSobremetalController
-            -material JComboBox~Material~
-            -densidadePersonalizada JTextField
-            -valor1 JTextField
-            -valor2 JTextField
-            -valor3 JTextField
-            -resultado1 JTextField
-            -resultado2 JTextField
-            -resultado3 JTextField
-            -resultadoMassa JTextField
-            +getValor1() String
-            +getValor2() String
-            +getValor3() String
-            +isPerfilCilindrico() boolean
-            +isOtimizar() boolean
-            +getMaterialSelecionado() Material
-            +mostrarResultado(String, String, String, String) void
-            +mostrarValorInvalido() void
-            -calcular() void
-            -atualizarPerfil() void
-            -atualizarDensidade() void
-            -abrirImagemAjuda(String, String) void
-            -abrirSobre() void
-            -copiarResultado(JTextField) void
-        }
+    class TemaAplicacao {
+        +instalar()$ boolean
     }
 
-    namespace Controller {
-        class CalculoSobremetalController {
-            -view CalculoSobremetalView
-            -validador ValidadorCalculo
-            -formatador FormatadorResultado
-            +calcular() void
-            -calcularCilindrico() void
-            -calcularRetangular() void
-        }
-
-        class ValidadorCalculo {
-            +lerValor(String) Double
-            +valoresCilindricosValidos(Double, Double, Double) boolean
-            +valoresRetangularesValidos(Double, Double, Double) boolean
-            -diametroCilindricoValido(double) boolean
-        }
-
-        class FormatadorResultado {
-            +polegadas(String) String
-            +diametroMilimetros(double) String
-            +milimetros(double) String
-            +quilogramas(double) String
-        }
+    class CalculoSobremetalView {
+        -controller CalculoSobremetalController
+        -painelVisualizacao PainelVisualizacao
+        +getValor1() String
+        +getValor2() String
+        +getValor3() String
+        +isPerfilCilindrico() boolean
+        +isOtimizar() boolean
+        +getPadraoDimensional() PadraoDimensional
+        +getMaterialSelecionado() Material
+        +mostrarResultadoCilindrico(...) void
+        +mostrarResultadoRetangular(...) void
+        +mostrarVisualizacaoCilindrica(...) void
+        +mostrarVisualizacaoRetangular(...) void
+        +mostrarValorInvalido() void
     }
 
-    namespace Modelo {
-        class CalcMateriaPrima {
-            -material Material
-            +CalcMateriaPrima()
-            +CalcMateriaPrima(int)
-            +CalcMateriaPrima(Material)
-            +calcularCilindrico(double, double, boolean) ResultadoCilindrico
-            +calcularRetangular(double, double, double, boolean) ResultadoRetangular
-            -calculosobremetal(double) double
-            -selecionarIndiceDiametro(double, boolean) int
-        }
-
-        class Material {
-            -nome String
-            -densidade double
-            +getNome() String
-            +getDensidade() double
-        }
-
-        class FaixaSobremetal {
-            -limiteMinimo double
-            -limiteMaximo double
-            -sobremetal double
-            +contem(double) boolean
-            +getLimiteMinimo() double
-            +getLimiteMaximo() double
-            +getSobremetal() double
-        }
-
-        class ResultadoCilindrico {
-            -diametroMilimetros double
-            -diametroPolegadas String
-            -sobremetal double
-            -massa double
-        }
-
-        class ResultadoRetangular {
-            -lado1 double
-            -lado2 double
-            -lado3 double
-            -massa double
-        }
+    class PainelVisualizacao {
+        +mostrarCilindrico(...) void
+        +mostrarRetangular(...) void
+        +limpar(boolean) void
+        #paintComponent(Graphics) void
     }
 
-    namespace Dados {
-        class TabelasMateriaPrima {
-            -MATERIAIS$ Material[]
-            -FAIXAS_SOBREMETAL$ FaixaSobremetal[]
-            -DIAMETROS_MM$ double[]
-            -DIAMETROS_POLEGADA$ String[]
-            +material(int)$ Material
-            +materiais()$ Material[]
-            +faixasSobremetal()$ FaixaSobremetal[]
-            +diametrosMm()$ double[]
-            +diametrosPolegada()$ String[]
-        }
+    class CardPanel
+    class Icones {
+        +carregar(String, int)$ Icon
     }
 
+    class CalculoSobremetalController {
+        -view CalculoSobremetalView
+        -validador ValidadorCalculo
+        -formatador FormatadorResultado
+        +calcular() void
+    }
+
+    class ValidadorCalculo {
+        +lerValor(String) Double
+        +valoresCilindricosValidos(Double, Double, Double, PadraoDimensional) boolean
+        +valoresRetangularesValidos(Double, Double, Double, boolean, PadraoDimensional) boolean
+        +limiteDiametroCilindrico() double
+    }
+
+    class FormatadorResultado {
+        +polegadas(String) String
+        +diametroMilimetros(double) String
+        +milimetros(double) String
+        +quilogramas(double) String
+    }
+
+    class CalcMateriaPrima {
+        -material Material
+        +calcularCilindrico(double, double, boolean) ResultadoCilindrico
+        +calcularCilindrico(double, double, boolean, PadraoDimensional) ResultadoCilindrico
+        +calcularRetangular(double, double, double, boolean) ResultadoRetangular
+        +calcularRetangular(double, double, double, boolean, PadraoDimensional) ResultadoRetangular
+        -calcularSobremetal(double) double
+        -selecionarDimensaoMetrica(double) DimensaoComercial
+        -selecionarDimensaoPolegada(double, boolean) DimensaoComercial
+    }
+
+    class PadraoDimensional {
+        <<enumeration>>
+        METRICO
+        POLEGADA
+    }
+
+    class DimensaoComercial {
+        -milimetros double
+        -descricao String
+        -padrao PadraoDimensional
+        +getMilimetros() double
+        +getDescricao() String
+        +getPadrao() PadraoDimensional
+    }
+
+    class Material {
+        -nome String
+        -densidade double
+    }
+
+    class FaixaSobremetal {
+        -limiteMinimo double
+        -limiteMaximo double
+        -sobremetal double
+        +contem(double) boolean
+    }
+
+    class ResultadoCilindrico {
+        -diametroMilimetros double
+        -descricaoDiametro String
+        -comprimentoTotal double
+        -sobremetal double
+        -massa double
+    }
+
+    class ResultadoRetangular {
+        -larguraMilimetros double
+        -alturaMilimetros double
+        -comprimentoMilimetros double
+        -larguraDescricao String
+        -alturaDescricao String
+        -comprimentoDescricao String
+        -massa double
+    }
+
+    class TabelasMateriaPrima {
+        -MATERIAIS$ Material[]
+        -FAIXAS_SOBREMETAL$ FaixaSobremetal[]
+        -DIMENSOES_POLEGADA$ DimensaoComercial[]
+        +materiais()$ Material[]
+        +faixasSobremetal()$ FaixaSobremetal[]
+        +dimensoesPolegada()$ DimensaoComercial[]
+    }
+
+    Main --> TemaAplicacao : instala tema
     Main --> CalculoSobremetalView : cria
-    CalculoSobremetalView --> VersaoAplicacao : exibe versão
-    CalculoSobremetalView --> CalculoSobremetalController : delega cálculo
-    CalculoSobremetalView ..> Material : cria material personalizado
-    CalculoSobremetalView --> TabelasMateriaPrima : lista materiais
-    CalculoSobremetalController --> ValidadorCalculo : valida entradas
-    CalculoSobremetalController --> FormatadorResultado : formata saída
-    CalculoSobremetalController --> CalcMateriaPrima : executa cálculo
-    ValidadorCalculo --> TabelasMateriaPrima : deriva limite cilíndrico
-    CalcMateriaPrima --> Material : usa densidade
-    CalcMateriaPrima --> TabelasMateriaPrima : consulta tabelas
+    CalculoSobremetalView --> CalculoSobremetalController
+    CalculoSobremetalView --> PainelVisualizacao
+    CalculoSobremetalView --> CardPanel
+    CalculoSobremetalView --> Icones
+    CalculoSobremetalController --> ValidadorCalculo
+    CalculoSobremetalController --> FormatadorResultado
+    CalculoSobremetalController --> CalcMateriaPrima
+    CalculoSobremetalController --> PadraoDimensional
+    ValidadorCalculo --> TabelasMateriaPrima
+    CalcMateriaPrima --> TabelasMateriaPrima
+    CalcMateriaPrima --> Material
+    CalcMateriaPrima --> DimensaoComercial
     CalcMateriaPrima ..> ResultadoCilindrico : cria
     CalcMateriaPrima ..> ResultadoRetangular : cria
-    TabelasMateriaPrima o-- Material : mantém
-    TabelasMateriaPrima o-- FaixaSobremetal : mantém
+    DimensaoComercial --> PadraoDimensional
+    TabelasMateriaPrima o-- Material
+    TabelasMateriaPrima o-- FaixaSobremetal
+    TabelasMateriaPrima o-- DimensaoComercial
 ```
 
 ## Sequência do cálculo
@@ -161,32 +165,23 @@ sequenceDiagram
     participant Model as CalcMateriaPrima
     participant Tables as TabelasMateriaPrima
     participant Formatter as FormatadorResultado
+    participant Visual as PainelVisualizacao
 
-    Usuario->>View: seleciona perfil e material
-    opt Densidade personalizada
-        Usuario->>View: informa densidade em g/cm³
-        View->>View: valida e converte para kg/mm³
-    end
-    Usuario->>View: informa dimensões
-    Usuario->>View: aciona Calcular ou Enter
+    Usuario->>View: seleciona perfil, padrão e material
+    Usuario->>View: informa dimensões em milímetros
+    Usuario->>View: aciona Calcular
     View->>Controller: calcular()
-    Controller->>View: obtém entradas e opções
-    Controller->>Validator: converte e valida dimensões
+    Controller->>Validator: valida valores e padrão
 
     alt Entrada inválida
-        Validator-->>Controller: inválida
         Controller->>View: mostrarValorInvalido()
     else Entrada válida
-        Validator->>Tables: consulta faixas e diâmetros
-        Validator-->>Controller: válida
-        Controller->>Model: calcular perfil selecionado
-        Model->>Tables: consulta sobremetal e diâmetro comercial
-        Tables-->>Model: dados técnicos
-        Model-->>Controller: resultado imutável
-        Controller->>Formatter: formata valores e unidades
-        Formatter-->>Controller: textos formatados
-        Controller->>View: mostrarResultado(...)
-        View-->>Usuario: exibe resultados selecionáveis
+        Controller->>Model: calcular com PadraoDimensional
+        Model->>Tables: consulta faixa e tabela imperial quando necessária
+        Model-->>Controller: ResultadoCilindrico ou ResultadoRetangular
+        Controller->>Formatter: formata valores
+        Controller->>View: mostra resultado
+        View->>Visual: atualiza esquema proporcional
     end
 ```
 
@@ -194,10 +189,13 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    SRC[Java Swing e regras] --> MVN[Maven]
-    IMG[Imagens em src/main/resources] --> MVN
-    MVN --> JAR[MateriaPrima.jar]
-    JAR --> CLS[Classes Java 8]
-    JAR --> RES[Imagens de ajuda]
-    JAR --> MAN[Manifesto com Main-Class]
+    SRC[Código Java 8] --> MVN[Maven]
+    SVG[Ícones SVG] --> MVN
+    IMG[Imagens de ajuda] --> MVN
+    FLAT[FlatLaf e flatlaf-extras] --> SHADE[Maven Shade Plugin]
+    MVN --> SHADE
+    SHADE --> JAR[target/MateriaPrima.jar]
+    JAR --> MAIN[Main-Class]
+    JAR --> RES[Recursos incorporados]
+    JAR --> DEP[Dependências incorporadas]
 ```

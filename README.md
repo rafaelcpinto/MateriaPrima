@@ -16,23 +16,21 @@ A refatoração de 2026 reorganizou o código, adicionou validações e testes a
 
 Principais características:
 
-- interface desktop Java Swing;
+- interface desktop Java Swing com tema FlatLaf;
 - perfis cilíndrico e retangular;
+- seleção dimensional em milímetro ou polegada para os dois perfis;
 - onze materiais cadastrados e opção de densidade personalizada;
-- seleção automática de diâmetros comerciais;
+- seleção automática de dimensões comerciais;
 - cálculo de sobremetal por faixa dimensional;
 - estimativa de massa em quilogramas;
 - opção de otimização abaixo da norma;
 - validação de entradas e limites;
 - ajuda contextual com diagramas incorporados ao JAR;
 - resultados selecionáveis e cópia individual para a área de transferência;
+- visualização dinâmica e proporcional da matéria-prima e da peça acabada;
 - janela Sobre com histórico e identificação da aplicação;
 - testes automatizados com JUnit 5;
 - build reproduzível com Maven.
-
-## Imagens
-
-<img width="508" height="624" alt="Interface do MateriaPrima" src="https://github.com/user-attachments/assets/2a29628d-be5d-49c5-b386-bd331cbe6799" />
 
 ## Requisitos
 
@@ -64,6 +62,9 @@ mvn clean package
 java -jar target/MateriaPrima.jar
 ```
 
+O empacotamento gera um JAR executável autocontido com FlatLaf e o suporte a
+ícones SVG.
+
 ## Testes
 
 Execute:
@@ -85,21 +86,30 @@ Os testes cobrem:
 - independência entre materiais e densidades;
 - fronteiras das faixas de sobremetal;
 - validação dos campos;
-- formatação das unidades e resultados.
+- formatação das unidades e resultados;
+- inicialização do tema e carregamento seguro dos ícones;
+- estrutura dos cards e atualização da visualização dinâmica.
 
 ## Regras de entrada
 
 ### Perfil cilíndrico
 
-- diâmetro acabado: deve pertencer às faixas técnicas e permitir a seleção
-  de um diâmetro comercial após a aplicação do sobremetal (na tabela atual,
-  valores menores que `919,2 mm` são aceitos);
+- todas as entradas são informadas em milímetros;
+- no padrão **Milímetro**, o diâmetro necessário é selecionado com `Math.ceil()`;
+- no padrão **Polegada**, o próximo valor é obtido da tabela imperial;
+- no padrão Polegada, o diâmetro acabado deve ser menor que `919,2 mm`, limite
+  derivado do maior valor comercial e do sobremetal necessário;
 - comprimento: de `0` a `3500 mm`;
-- sobremetal no comprimento: maior ou igual a `0`.
+- adicional para fixação: maior ou igual a `0`.
 
 ### Perfil retangular
 
-- lado 1, lado 2 e lado 3: de `0` até um valor menor que `1000 mm`.
+- largura, altura e comprimento são informados em milímetros;
+- no padrão **Milímetro**, cada dimensão necessária é selecionada com `Math.ceil()`;
+- no padrão **Polegada**, cada dimensão é selecionada separadamente na mesma
+  tabela imperial usada pelo perfil cilíndrico;
+- cada dimensão deve pertencer às faixas de sobremetal e permitir uma seleção
+  comercial válida no padrão escolhido.
 
 Campos vazios, números malformados, negativos, infinitos ou `NaN` são rejeitados pela aplicação.
 
@@ -119,7 +129,7 @@ Campos vazios, números malformados, negativos, infinitos ou `NaN` são rejeitad
 | PEAD | 0,95 × 10⁻⁶ |
 | Acrílico (PMMA) | 1,18 × 10⁻⁶ |
 
-Os materiais, faixas de sobremetal e diâmetros comerciais estão centralizados em
+Os materiais, faixas de sobremetal e dimensões comerciais estão centralizados em
 `TabelasMateriaPrima`. A interface mostra a densidade do material selecionado em
 `g/cm³` e permite informar uma densidade personalizada positiva, usando ponto ou
 vírgula decimal.
@@ -132,15 +142,18 @@ src/main/java/materiaprima/
 ├── controller/   coordenação, validação e formatação
 ├── dados/        tabelas técnicas
 ├── modelo/       regras, entidades e resultados
-└── view/         interface construída com Java Swing
+└── view/         interface Swing, cards, ícones e visualização dinâmica
 
 src/test/java/materiaprima/
+├── aplicacao/    teste de inicialização do tema
 ├── controller/   testes de validação e formatação
-└── modelo/       testes dos cálculos e regras
+├── dados/        testes das tabelas técnicas
+├── modelo/       testes dos cálculos e regras
+└── view/         testes estruturais e de renderização
 
-src/main/resources/images/
-├── sobremetal-dimensoes.png
-└── sobremetal-comprimento.png
+src/main/resources/
+├── icons/        ícones SVG da interface
+└── images/       imagens da ajuda contextual
 ```
 
 Consulte [docs/arquitetura.md](docs/arquitetura.md) para as decisões arquiteturais e
@@ -150,8 +163,13 @@ Consulte [docs/arquitetura.md](docs/arquitetura.md) para as decisões arquitetur
 
 - `Material` associa nome e densidade.
 - `FaixaSobremetal` associa limite mínimo inclusivo, limite máximo exclusivo e sobremetal.
-- Os diâmetros em milímetros e polegadas permanecem em tabelas paralelas, preparados para futura persistência em arquivo.
+- `PadraoDimensional` representa `METRICO` e `POLEGADA`.
+- `DimensaoComercial` associa valor em milímetros, descrição comercial e padrão dimensional.
+- A tabela imperial é única; o padrão métrico é calculado com `Math.ceil()` e não
+  possui uma tabela cadastrada.
 - `TABELA_MATERIA_PRIMA.csv` foi preservado como referência para essa evolução.
+- FlatLaf e os ícones de terceiros estão documentados em
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ### Identificação da versão
 

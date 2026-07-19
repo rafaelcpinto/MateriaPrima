@@ -2,113 +2,52 @@
 
 ## Visão geral
 
-A aplicação segue uma separação simples entre inicialização, interface, coordenação, domínio e dados técnicos.
+O MateriaPrima é uma aplicação desktop Java 8 organizada em camadas simples. A
+interface usa Swing com FlatLaf, enquanto cálculos, validações e dados técnicos
+permanecem independentes da apresentação.
 
 ```mermaid
-classDiagram
-    direction LR
-
-    class Main {
-        +main(String[] args)
-        -configurarAparencia()
-    }
-
-    class VersaoAplicacao {
-        +String ATUAL
-    }
-
-    class CalculoSobremetalView {
-        -CalculoSobremetalController controller
-        +getValor1() String
-        +getValor2() String
-        +getValor3() String
-        +isPerfilCilindrico() boolean
-        +isOtimizar() boolean
-        +getMaterialSelecionado() Material
-        +mostrarResultado(String, String, String, String)
-        +mostrarValorInvalido()
-        -abrirImagemAjuda(String, String)
-        -abrirSobre()
-        -copiarResultado(JTextField)
-    }
-
-    class CalculoSobremetalController {
-        -CalculoSobremetalView view
-        -ValidadorCalculo validador
-        -FormatadorResultado formatador
-        +calcular()
-        -calcularCilindrico()
-        -calcularRetangular()
-    }
-
-    class ValidadorCalculo {
-        +lerValor(String) Double
-        +valoresCilindricosValidos(Double, Double, Double) boolean
-        +valoresRetangularesValidos(Double, Double, Double) boolean
-    }
-
-    class FormatadorResultado {
-        +polegadas(String) String
-        +diametroMilimetros(double) String
-        +milimetros(double) String
-        +quilogramas(double) String
-    }
-
-    class CalcMateriaPrima {
-        -Material material
-        +calcularCilindrico(double, double, boolean) ResultadoCilindrico
-        +calcularRetangular(double, double, double, boolean) ResultadoRetangular
-    }
-
-    class Material {
-        -String nome
-        -double densidade
-        +getNome() String
-        +getDensidade() double
-    }
-
-    class FaixaSobremetal {
-        -double limiteMinimo
-        -double limiteMaximo
-        -double sobremetal
-        +contem(double) boolean
-        +getSobremetal() double
-    }
-
-    class ResultadoCilindrico {
-        -double diametroMilimetros
-        -String diametroPolegadas
-        -double sobremetal
-        -double massa
-    }
-
-    class ResultadoRetangular {
-        -double lado1
-        -double lado2
-        -double lado3
-        -double massa
-    }
-
-    class TabelasMateriaPrima {
-        -Material[] MATERIAIS
-        -FaixaSobremetal[] FAIXAS_SOBREMETAL
-        -double[] DIAMETROS_MM
-        -String[] DIAMETROS_POLEGADA
-    }
-
-    Main --> CalculoSobremetalView : abre
-    CalculoSobremetalView --> VersaoAplicacao : exibe versão
-    CalculoSobremetalView --> CalculoSobremetalController : delega ações
-    CalculoSobremetalController --> ValidadorCalculo : valida
-    CalculoSobremetalController --> FormatadorResultado : formata
-    CalculoSobremetalController --> CalcMateriaPrima : solicita cálculo
-    CalcMateriaPrima --> Material : usa densidade
-    CalcMateriaPrima --> TabelasMateriaPrima : consulta dados
-    TabelasMateriaPrima o-- Material
-    TabelasMateriaPrima o-- FaixaSobremetal
-    CalcMateriaPrima --> ResultadoCilindrico : cria
-    CalcMateriaPrima --> ResultadoRetangular : cria
+flowchart LR
+    Main --> Tema[TemaAplicacao]
+    Main --> View[CalculoSobremetalView]
+    View --> Controller[CalculoSobremetalController]
+    View --> Visualizacao[PainelVisualizacao]
+    View --> Componentes[CardPanel e Icones]
+    Controller --> Validador[ValidadorCalculo]
+    Controller --> Formatador[FormatadorResultado]
+    Controller --> Calculo[CalcMateriaPrima]
+    Calculo --> Tabelas[TabelasMateriaPrima]
+    Validador --> Tabelas
+    Calculo --> Resultados[ResultadoCilindrico / ResultadoRetangular]
 ```
+
+## Responsabilidades
+
+| Área | Responsabilidade |
+|---|---|
+| `aplicacao` | Instalar o FlatLaf, iniciar o Swing e centralizar a versão exibida. |
+| `view` | Montar os três cards, ler entradas, exibir resultados, copiar valores, mostrar ajudas e renderizar a visualização dinâmica. |
+| `controller` | Coordenar o perfil escolhido, validar entradas e formatar a apresentação dos resultados. |
+| `modelo` | Aplicar sobremetal, selecionar dimensões comerciais e calcular massa. |
+| `dados` | Manter materiais, faixas de sobremetal e a tabela imperial em memória. |
+
+## Padrões dimensionais
+
+Todas as entradas e todos os cálculos internos usam milímetros.
+
+- `PadraoDimensional.METRICO`: seleciona o próximo milímetro inteiro com
+  `Math.ceil()`.
+- `PadraoDimensional.POLEGADA`: seleciona uma `DimensaoComercial` da tabela
+  imperial mantida por `TabelasMateriaPrima`.
+- No retangular, largura, altura e comprimento são selecionados separadamente.
+- A opção de permitir dimensão abaixo da recomendada preserva a regra histórica
+  do cálculo e da busca na tabela.
+
+`DimensaoComercial` é imutável e associa:
+
+- valor real em milímetros;
+- descrição apresentada ao usuário;
+- padrão dimensional.
 
 ## Fluxo de cálculo
 
@@ -122,69 +61,77 @@ sequenceDiagram
     participant Tables as TabelasMateriaPrima
     participant Formatter as FormatadorResultado
 
-    Usuario->>View: informa dimensões, material ou densidade personalizada
-    Usuario->>View: clica em Calcular
-    View->>View: valida densidade personalizada, quando usada
+    Usuario->>View: informa perfil, padrão, material e dimensões
+    Usuario->>View: aciona Calcular
     View->>Controller: calcular()
-    Controller->>View: lê campos e opções
-    Controller->>Validator: converte e valida valores
+    Controller->>View: lê entradas e opções
+    Controller->>Validator: converte e valida
 
-    alt entrada inválida
+    alt Entrada inválida
         Validator-->>Controller: inválida
         Controller->>View: mostrarValorInvalido()
-    else entrada válida
+    else Entrada válida
         Validator-->>Controller: válida
-        Controller->>Model: calcular perfil selecionado
-        Model->>Tables: consulta material, faixa e diâmetro
-        Tables-->>Model: dados técnicos
-        Model-->>Controller: objeto de resultado
-        Controller->>Formatter: formata unidades e casas decimais
-        Formatter-->>Controller: textos formatados
-        Controller->>View: mostrarResultado(...)
+        Controller->>Model: calcula com PadraoDimensional
+        Model->>Tables: consulta sobremetal e, se necessário, tabela imperial
+        Model-->>Controller: resultado imutável
+        Controller->>Formatter: formata valores
+        Controller->>View: apresenta resultado e atualiza visualização
     end
 ```
 
-## Responsabilidades
+## Interface
 
-| Área | Responsabilidade |
-|---|---|
-| `aplicacao` | Iniciar o Swing, configurar aparência e declarar a versão apresentada. |
-| `view` | Ler componentes visuais, validar a densidade personalizada e apresentar mensagens, resultados e ajudas contextuais. |
-| `controller` | Coordenar a ação do usuário, validar e formatar. |
-| `modelo` | Executar fórmulas e representar materiais, faixas e resultados. |
-| `dados` | Manter e validar as tabelas técnicas em memória. |
+`CalculoSobremetalView` mantém três cards principais:
 
-## Decisões de projeto
+1. Dados de entrada;
+2. Resultado;
+3. Visualização dinâmica.
 
-- O modelo não guarda resultados temporários: cada operação retorna um objeto imutável.
-- Materiais associam nome e densidade no mesmo objeto, evitando dependência de índices soltos.
-- Faixas de sobremetal tornam explícita a relação entre limites e valor aplicado.
-- As tabelas retornam cópias dos arrays para evitar alteração externa acidental.
-- Diâmetros ainda permanecem em memória; a evolução prevista é introduzir um repositório baseado em arquivo.
-- A View é construída diretamente com Swing, sem dependência de arquivos gerados por IDE.
-- A densidade cadastrada é exibida em `g/cm³`; uma densidade personalizada é
-  convertida pela View para `kg/mm³` antes da criação do `Material` temporário.
-- A validação cilíndrica deriva o limite superior das faixas de sobremetal e da
-  tabela de diâmetros comerciais, evitando um teto fixo desatualizado.
-- As imagens de ajuda ficam em `src/main/resources/images` e são carregadas por
-  `getResource`, permanecendo incorporadas ao JAR.
-- Os resultados são campos não editáveis e selecionáveis; cada linha possui uma
-  ação de cópia independente para a área de transferência.
+Os valores principais são `JTextField` não editáveis e selecionáveis. O
+equivalente em milímetros permanece em `JLabel` separado, portanto a cópia de um
+valor imperial contém somente a descrição em polegadas. Cada linha possui um
+`JButton` de cópia acessível por teclado.
 
-## Evolução prevista
+`PainelVisualizacao` usa `Graphics2D`, antialiasing e dimensões normalizadas. O
+desenho preserva relações proporcionais, aplicando uma diferença visual mínima
+para que sobremetais pequenos permaneçam perceptíveis.
 
-Quando os diâmetros forem persistidos, a dependência direta de `TabelasMateriaPrima` poderá ser substituída por uma abstração como:
+## Dados e validação
+
+- Arrays técnicos são devolvidos por cópia para impedir alteração externa.
+- A tabela imperial é ordenada e termina em 38 polegadas, equivalentes a
+  965,2 mm.
+- O limite de entrada cilíndrico imperial é derivado pelo `ValidadorCalculo` a
+  partir da maior dimensão comercial e da faixa de sobremetal. Atualmente, o
+  diâmetro acabado deve ser menor que 919,2 mm.
+- A tabela de sobremetal permanece compartilhada pelos dois perfis.
+- Densidades cadastradas são armazenadas em kg/mm³ e apresentadas em g/cm³.
+
+## Recursos e distribuição
+
+- Imagens da ajuda: `src/main/resources/images/`.
+- Ícones SVG: `src/main/resources/icons/`, carregados com `FlatSVGIcon`.
+- Um ícone ausente gera aviso e não impede a abertura da aplicação.
+- O Maven Shade Plugin produz `target/MateriaPrima.jar` com as dependências de
+  execução incorporadas.
+- Licenças de terceiros estão registradas em `THIRD_PARTY_NOTICES.md`.
+
+## Evolução possível
+
+A tabela em memória pode ser substituída futuramente por um repositório, sem
+alterar a regra de seleção:
 
 ```mermaid
 classDiagram
-    class RepositorioDiametros {
+    class RepositorioDimensoes {
         <<interface>>
-        +listar() List~DiametroComercial~
+        +listar(PadraoDimensional) List~DimensaoComercial~
     }
 
-    class RepositorioDiametrosArquivo
+    class RepositorioDimensoesArquivo
     class CalcMateriaPrima
 
-    RepositorioDiametros <|.. RepositorioDiametrosArquivo
-    CalcMateriaPrima --> RepositorioDiametros
+    RepositorioDimensoes <|.. RepositorioDimensoesArquivo
+    CalcMateriaPrima --> RepositorioDimensoes
 ```
