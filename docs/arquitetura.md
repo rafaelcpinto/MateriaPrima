@@ -27,6 +27,9 @@ classDiagram
         +getMaterialSelecionado() Material
         +mostrarResultado(String, String, String, String)
         +mostrarValorInvalido()
+        -abrirImagemAjuda(String, String)
+        -abrirSobre()
+        -copiarResultado(JTextField)
     }
 
     class CalculoSobremetalController {
@@ -119,8 +122,9 @@ sequenceDiagram
     participant Tables as TabelasMateriaPrima
     participant Formatter as FormatadorResultado
 
-    Usuario->>View: informa dimensões e material
+    Usuario->>View: informa dimensões, material ou densidade personalizada
     Usuario->>View: clica em Calcular
+    View->>View: valida densidade personalizada, quando usada
     View->>Controller: calcular()
     Controller->>View: lê campos e opções
     Controller->>Validator: converte e valida valores
@@ -145,7 +149,7 @@ sequenceDiagram
 | Área | Responsabilidade |
 |---|---|
 | `aplicacao` | Iniciar o Swing, configurar aparência e declarar a versão apresentada. |
-| `view` | Ler componentes visuais e apresentar mensagens ou resultados. |
+| `view` | Ler componentes visuais, validar a densidade personalizada e apresentar mensagens, resultados e ajudas contextuais. |
 | `controller` | Coordenar a ação do usuário, validar e formatar. |
 | `modelo` | Executar fórmulas e representar materiais, faixas e resultados. |
 | `dados` | Manter e validar as tabelas técnicas em memória. |
@@ -157,7 +161,15 @@ sequenceDiagram
 - Faixas de sobremetal tornam explícita a relação entre limites e valor aplicado.
 - As tabelas retornam cópias dos arrays para evitar alteração externa acidental.
 - Diâmetros ainda permanecem em memória; a evolução prevista é introduzir um repositório baseado em arquivo.
-- A View preserva o arquivo `.form`, permitindo manutenção visual da interface.
+- A View é construída diretamente com Swing, sem dependência de arquivos gerados por IDE.
+- A densidade cadastrada é exibida em `g/cm³`; uma densidade personalizada é
+  convertida pela View para `kg/mm³` antes da criação do `Material` temporário.
+- A validação cilíndrica deriva o limite superior das faixas de sobremetal e da
+  tabela de diâmetros comerciais, evitando um teto fixo desatualizado.
+- As imagens de ajuda ficam em `src/main/resources/images` e são carregadas por
+  `getResource`, permanecendo incorporadas ao JAR.
+- Os resultados são campos não editáveis e selecionáveis; cada linha possui uma
+  ação de cópia independente para a área de transferência.
 
 ## Evolução prevista
 

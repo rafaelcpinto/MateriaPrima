@@ -1,5 +1,6 @@
 package materiaprima.modelo;
 
+import materiaprima.dados.TabelasMateriaPrima;
 import org.junit.jupiter.api.Test;
 
 public class CalcMateriaPrimaTest {
@@ -10,18 +11,18 @@ public class CalcMateriaPrimaTest {
         ResultadoCilindrico resultado = calculo.calcularCilindrico(0.0, 100.0, false);
         assertTrue(resultado.getMassa() >= 0, "Diâmetro zero deveria ser aceito");
 
-        resultado = calculo.calcularCilindrico(483.0, 100.0, false);
-        assertTrue(resultado.getDiametroMilimetros() == 508.0,
-                "483 mm deveria selecionar matéria-prima de 508 mm");
+        resultado = calculo.calcularCilindrico(953.0, 100.0, false);
+        assertTrue(resultado.getDiametroMilimetros() == 1000.0,
+                "953 mm deveria selecionar matéria-prima de 1000 mm");
     }
 
     @Test
     void rejeitaLimitesCilindricosInvalidos() {
         assertThrows(new Acao() {
             public void executar() {
-                new CalcMateriaPrima().calcularCilindrico(484.0, 100.0, false);
+                new CalcMateriaPrima().calcularCilindrico(954.0, 100.0, false);
             }
-        }, "484 mm deveria ser rejeitado");
+        }, "954 mm deveria ser rejeitado por não haver próximo diâmetro comercial");
 
         assertThrows(new Acao() {
             public void executar() {
@@ -61,7 +62,7 @@ public class CalcMateriaPrimaTest {
     @Test
     void mantemCalculosIndependentesPorMaterial() {
         CalcMateriaPrima aco = new CalcMateriaPrima(0);
-        CalcMateriaPrima polipropileno = new CalcMateriaPrima(3);
+        CalcMateriaPrima polipropileno = new CalcMateriaPrima(7);
 
         ResultadoCilindrico resultadoAco = aco.calcularCilindrico(100.0, 200.0, false);
         ResultadoCilindrico resultadoPolipropileno =
@@ -72,7 +73,7 @@ public class CalcMateriaPrimaTest {
 
         assertThrows(new Acao() {
             public void executar() {
-                new CalcMateriaPrima(7);
+                new CalcMateriaPrima(TabelasMateriaPrima.materiais().length);
             }
         }, "Posição de material inexistente deveria ser rejeitada");
     }

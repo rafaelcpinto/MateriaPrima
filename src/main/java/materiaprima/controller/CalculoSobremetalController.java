@@ -39,8 +39,8 @@ public class CalculoSobremetalController {
                 diametro, comprimento + sobremetalComprimento, view.isOtimizar());
 
         view.mostrarResultado(
-                formatador.polegadas(resultado.getDiametroPolegadas()),
                 formatador.diametroMilimetros(resultado.getDiametroMilimetros()),
+                formatador.polegadas(resultado.getDiametroPolegadas()),
                 formatador.milimetros(resultado.getSobremetal() / 2),
                 formatador.quilogramas(resultado.getMassa()));
     }
