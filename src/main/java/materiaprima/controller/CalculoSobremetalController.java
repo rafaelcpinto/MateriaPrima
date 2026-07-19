@@ -46,10 +46,13 @@ public class CalculoSobremetalController {
         String descricaoDiametro = padrao == PadraoDimensional.METRICO
                 ? resultado.getDiametroPolegadas()
                 : formatador.polegadas(resultado.getDiametroPolegadas());
+        String equivalente = padrao == PadraoDimensional.METRICO
+                ? "—"
+                : formatador.diametroMilimetros(resultado.getDiametroMilimetros());
 
         view.mostrarResultado(
-                formatador.diametroMilimetros(resultado.getDiametroMilimetros()),
                 descricaoDiametro,
+                equivalente,
                 formatador.milimetros(resultado.getSobremetal() / 2),
                 formatador.quilogramas(resultado.getMassa()));
     }

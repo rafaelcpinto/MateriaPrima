@@ -35,7 +35,7 @@ class CalculoSobremetalViewTest {
 
         JRadioButton padraoMetrico = campo("padraoMetrico");
         JRadioButton padraoPolegada = campo("padraoPolegada");
-        javax.swing.JPanel painelPadrao = campo("painelPadraoDiametro");
+        javax.swing.JPanel opcoesPadrao = campo("opcoesPadraoDiametro");
         JTextField valor1 = campo("valor1");
         JTextField valor2 = campo("valor2");
         JTextField valor3 = campo("valor3");
@@ -61,8 +61,8 @@ class CalculoSobremetalViewTest {
             calcular.doClick();
         });
 
-        assertEquals("50,80 mm", resultado1.getText());
-        assertEquals("2\" ", resultado2.getText());
+        assertEquals("2\" ", resultado1.getText());
+        assertEquals("50,80 mm", resultado2.getText());
         String massaPolegada = resultadoMassa.getText();
 
         SwingUtilities.invokeAndWait(() -> {
@@ -75,16 +75,16 @@ class CalculoSobremetalViewTest {
 
         assertEquals(PadraoDimensional.METRICO,
                 view.getPadraoDimensionalCilindrico());
-        assertEquals("51,00 mm", resultado1.getText());
-        assertEquals("51 mm", resultado2.getText());
+        assertEquals("51 mm", resultado1.getText());
+        assertEquals("—", resultado2.getText());
         assertNotEquals(massaPolegada, resultadoMassa.getText());
 
         SwingUtilities.invokeAndWait(perfilRetangular::doClick);
-        assertFalse(painelPadrao.isVisible());
+        assertFalse(opcoesPadrao.isVisible());
         assertEquals("46.01", valor1.getText());
 
         SwingUtilities.invokeAndWait(perfilCilindrico::doClick);
-        assertTrue(painelPadrao.isVisible());
+        assertTrue(opcoesPadrao.isVisible());
         assertTrue(padraoMetrico.isSelected());
         assertFalse(padraoPolegada.isSelected());
         assertEquals(PadraoDimensional.METRICO,
