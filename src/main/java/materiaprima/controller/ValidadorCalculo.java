@@ -1,6 +1,7 @@
 package materiaprima.controller;
 
 import materiaprima.dados.TabelasMateriaPrima;
+import materiaprima.modelo.DiametroComercial;
 import materiaprima.modelo.FaixaSobremetal;
 
 public final class ValidadorCalculo {
@@ -27,9 +28,9 @@ public final class ValidadorCalculo {
             return false;
         }
 
-        double[] diametrosComerciais = TabelasMateriaPrima.diametrosMm();
+        DiametroComercial[] diametrosComerciais = TabelasMateriaPrima.diametrosComerciais();
         double maiorDiametroComercial =
-                diametrosComerciais[diametrosComerciais.length - 1];
+                diametrosComerciais[diametrosComerciais.length - 1].getMilimetros();
         for (FaixaSobremetal faixa : TabelasMateriaPrima.faixasSobremetal()) {
             if (faixa.contem(diametro)) {
                 return diametro + faixa.getSobremetal() < maiorDiametroComercial;

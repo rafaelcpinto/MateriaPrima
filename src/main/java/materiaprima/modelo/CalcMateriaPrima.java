@@ -34,12 +34,12 @@ public class CalcMateriaPrima{
         //d = valor do diametro em polegada escolhido
         double c = calculosobremetal(a);
         int indice = selecionarIndiceDiametro(a+c, REDUZ);
-        double[] diametrosMm = TabelasMateriaPrima.diametrosMm();
-        String[] diametrosPolegada = TabelasMateriaPrima.diametrosPolegada();
-        double d = diametrosMm[indice];
+        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
+        DiametroComercial selecionado = diametros[indice];
+        double d = selecionado.getMilimetros();
         double sobremetalCalculado = (float)d-(float)a;
         double massa = calcularMassaCilindro(d,b);
-        return new ResultadoCilindrico(d, diametrosPolegada[indice], sobremetalCalculado, massa);
+        return new ResultadoCilindrico(d, selecionado.getPolegadas(), sobremetalCalculado, massa);
     }
     //é utilizada se a opção retangular for escolhida
     public ResultadoRetangular calcularRetangular(double a,double b,double c,boolean REDUZ){
@@ -74,26 +74,33 @@ public class CalcMateriaPrima{
    }
    //Escolhe a posição do diâmetro comercial mais próximo.
    private int selecionarIndiceDiametro(double a,boolean REDUZ) {
-        double[] diametroMM = TabelasMateriaPrima.diametrosMm();
-        int indice = repetição(a,diametroMM);
+        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
+        int indice = localizarIntervalo(a, diametros);
         return REDUZ ? indice : indice + 1;
     }
    //METODO DE COMPARAÇÃO DE VALORES UTILIZADO PARA ESCOLHA DOS VALORES DE SOBREMETAL E DIAMETRO, é chamada pelos metodos calculosobremetal() e calculodiametro()
-    private int repetição(double a, double b[]){
-        if (!Double.isFinite(a) || b == null || b.length < 2
-                || a < b[0] || a >= b[b.length-1]) {
-            throw new IllegalArgumentException("Valor fora dos limites da tabela: " + a);
+    private int localizarIntervalo(double valor, DiametroComercial[] diametros) {
+        if (!Double.isFinite(valor) || diametros == null || diametros.length < 2) {
+            throw new IllegalArgumentException("Dados inválidos para localizar o intervalo.");
         }
 
-        int indice=0;
-        while(indice < b.length-1){
-            if ((b[indice]<=a)&&(a<b[indice+1])){
+        double primeiro = diametros[0].getMilimetros();
+        double ultimo = diametros[diametros.length - 1].getMilimetros();
+        if (valor < primeiro || valor >= ultimo) {
+            throw new IllegalArgumentException("Valor fora dos limites da tabela: " + valor);
+        }
+
+        for (int indice = 0; indice < diametros.length - 1; indice++) {
+            double atual = diametros[indice].getMilimetros();
+            double proximo = diametros[indice + 1].getMilimetros();
+            if (atual <= valor && valor < proximo) {
                 return indice;
             }
-            indice++;
         }
 
-        throw new IllegalArgumentException("Intervalo não encontrado para o valor: " + a);
+        throw new IllegalArgumentException(
+                "Intervalo não encontrado para o valor: " + valor
+        );
     }
     
     //METODO UTILIZADO PARA REALIZAR OS CALCULOS NECESSARIOS
@@ -101,7 +108,7 @@ public class CalcMateriaPrima{
     private double calcularMassaCilindro(double diametro,double comprimento){
         double raio = diametro/2;
         double volume;
-        volume = raio*raio*3.14159*comprimento; 
+        volume = raio*raio*Math.PI*comprimento;
         return volume * material.getDensidade();
         //percentual = (diametroDigitado/diametroPoelegada)*100; //nao esta sendo utilizada
         

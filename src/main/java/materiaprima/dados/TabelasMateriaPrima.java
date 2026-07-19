@@ -1,6 +1,7 @@
 package materiaprima.dados;
 
 import materiaprima.modelo.FaixaSobremetal;
+import materiaprima.modelo.DiametroComercial;
 import materiaprima.modelo.Material;
 
 public final class TabelasMateriaPrima {
@@ -38,49 +39,113 @@ public final class TabelasMateriaPrima {
         new FaixaSobremetal(800, 1000, 46)
     };
 
-    private static final double[] DIAMETROS_MM = {
-            2.38125, 3.175, 3.96875, 4.7625, 5.55625, 6.35, 7.14375, 7.9375, 9.525,
-            11.1125, 12.7, 14.2875, 15.875, 17.4625, 19.05, 20.6375, 22.225, 23.8125,
-            25.4, 26.9875, 28.575, 30.1625, 31.75, 33.3375, 34.925, 36.5125, 38.1,
-            39.6875, 41.275, 44.45, 47.625, 50.8, 52.3875, 53.975, 55.5625, 57.15,
-            58.7375, 60.325, 61.9125, 63.5, 66.675, 69.85, 73.025, 76.2, 79.375,
-            82.55, 85.725, 88.9, 92.075, 95.25, 98.425, 101.6, 104.775, 107.95,
-            111.125, 114.3, 117.475, 120.65, 123.825, 127, 133.35, 139.7, 146.05,
-            152.4, 158.75, 165.1, 171.45, 177.8, 184.15, 190.5, 196.85, 203.2,
-            209.55, 215.9, 222.25, 228.6, 234.95, 241.3, 247.65, 254, 266.7, 279.4,
-            292.1, 304.8, 330.2, 355.6, 381, 406.4, 431.8, 457.2, 508,
-
-            // Novos diâmetros
-            558.8, 609.6, 660.4, 711.2, 762.0,
-            812.8, 863.6, 914.4, 965.2, 1000.0
-    };
-
-    private static final String[] DIAMETROS_POLEGADA = {
-            "3/32", "1/8", "5/32", "3/16", "7/32", "1/4", "9/32", "5/16", "3/8",
-            "7/16", "1/2", "9/16", "5/8", "11/16", "3/4", "13/16", "7/8", "15/16",
-            "1", "1   1/16", "1   1/8", "1   3/16", "1   1/4", "1   5/16", "1   3/8",
-            "1   7/16", "1   1/2", "1   9/16", "1   5/8", "1   3/4", "1   7/8", "2",
-            "2   1/16", "2   1/8", "2   3/16", "2   1/4", "2   5/16", "2   3/8",
-            "2   7/16", "2   1/2", "2   5/8", "2   3/4", "2   7/8", "3", "3   1/8",
-            "3   1/4", "3   3/8", "3   1/2", "3   5/8", "3   3/4", "3   7/8", "4",
-            "4   1/8", "4   1/4", "4   3/8", "4   1/2", "4   5/8", "4   3/4",
-            "4   7/8", "5", "5   1/4", "5   1/2", "5   3/4", "6", "6   1/4",
-            "6   1/2", "6   3/4", "7", "7   1/4", "7   1/2", "7   3/4", "8",
-            "8   1/4", "8   1/2", "8   3/4", "9", "9   1/4", "9   1/2", "9   3/4",
-            "10", "10   1/2", "11", "11   1/2", "12", "13", "14", "15", "16", "17",
-            "18", "20",
-
-            // Novos diâmetros
-            "22", "24", "26", "28", "30",
-            "32", "34", "36", "38", "1000 mm"
+    private static final DiametroComercial[] DIAMETROS_COMERCIAIS = {
+            new DiametroComercial(2.38125, "3/32"),
+            new DiametroComercial(3.175, "1/8"),
+            new DiametroComercial(3.96875, "5/32"),
+            new DiametroComercial(4.7625, "3/16"),
+            new DiametroComercial(5.55625, "7/32"),
+            new DiametroComercial(6.35, "1/4"),
+            new DiametroComercial(7.14375, "9/32"),
+            new DiametroComercial(7.9375, "5/16"),
+            new DiametroComercial(9.525, "3/8"),
+            new DiametroComercial(11.1125, "7/16"),
+            new DiametroComercial(12.7, "1/2"),
+            new DiametroComercial(14.2875, "9/16"),
+            new DiametroComercial(15.875, "5/8"),
+            new DiametroComercial(17.4625, "11/16"),
+            new DiametroComercial(19.05, "3/4"),
+            new DiametroComercial(20.6375, "13/16"),
+            new DiametroComercial(22.225, "7/8"),
+            new DiametroComercial(23.8125, "15/16"),
+            new DiametroComercial(25.4, "1"),
+            new DiametroComercial(26.9875, "1   1/16"),
+            new DiametroComercial(28.575, "1   1/8"),
+            new DiametroComercial(30.1625, "1   3/16"),
+            new DiametroComercial(31.75, "1   1/4"),
+            new DiametroComercial(33.3375, "1   5/16"),
+            new DiametroComercial(34.925, "1   3/8"),
+            new DiametroComercial(36.5125, "1   7/16"),
+            new DiametroComercial(38.1, "1   1/2"),
+            new DiametroComercial(39.6875, "1   9/16"),
+            new DiametroComercial(41.275, "1   5/8"),
+            new DiametroComercial(44.45, "1   3/4"),
+            new DiametroComercial(47.625, "1   7/8"),
+            new DiametroComercial(50.8, "2"),
+            new DiametroComercial(52.3875, "2   1/16"),
+            new DiametroComercial(53.975, "2   1/8"),
+            new DiametroComercial(55.5625, "2   3/16"),
+            new DiametroComercial(57.15, "2   1/4"),
+            new DiametroComercial(58.7375, "2   5/16"),
+            new DiametroComercial(60.325, "2   3/8"),
+            new DiametroComercial(61.9125, "2   7/16"),
+            new DiametroComercial(63.5, "2   1/2"),
+            new DiametroComercial(66.675, "2   5/8"),
+            new DiametroComercial(69.85, "2   3/4"),
+            new DiametroComercial(73.025, "2   7/8"),
+            new DiametroComercial(76.2, "3"),
+            new DiametroComercial(79.375, "3   1/8"),
+            new DiametroComercial(82.55, "3   1/4"),
+            new DiametroComercial(85.725, "3   3/8"),
+            new DiametroComercial(88.9, "3   1/2"),
+            new DiametroComercial(92.075, "3   5/8"),
+            new DiametroComercial(95.25, "3   3/4"),
+            new DiametroComercial(98.425, "3   7/8"),
+            new DiametroComercial(101.6, "4"),
+            new DiametroComercial(104.775, "4   1/8"),
+            new DiametroComercial(107.95, "4   1/4"),
+            new DiametroComercial(111.125, "4   3/8"),
+            new DiametroComercial(114.3, "4   1/2"),
+            new DiametroComercial(117.475, "4   5/8"),
+            new DiametroComercial(120.65, "4   3/4"),
+            new DiametroComercial(123.825, "4   7/8"),
+            new DiametroComercial(127, "5"),
+            new DiametroComercial(133.35, "5   1/4"),
+            new DiametroComercial(139.7, "5   1/2"),
+            new DiametroComercial(146.05, "5   3/4"),
+            new DiametroComercial(152.4, "6"),
+            new DiametroComercial(158.75, "6   1/4"),
+            new DiametroComercial(165.1, "6   1/2"),
+            new DiametroComercial(171.45, "6   3/4"),
+            new DiametroComercial(177.8, "7"),
+            new DiametroComercial(184.15, "7   1/4"),
+            new DiametroComercial(190.5, "7   1/2"),
+            new DiametroComercial(196.85, "7   3/4"),
+            new DiametroComercial(203.2, "8"),
+            new DiametroComercial(209.55, "8   1/4"),
+            new DiametroComercial(215.9, "8   1/2"),
+            new DiametroComercial(222.25, "8   3/4"),
+            new DiametroComercial(228.6, "9"),
+            new DiametroComercial(234.95, "9   1/4"),
+            new DiametroComercial(241.3, "9   1/2"),
+            new DiametroComercial(247.65, "9   3/4"),
+            new DiametroComercial(254, "10"),
+            new DiametroComercial(266.7, "10   1/2"),
+            new DiametroComercial(279.4, "11"),
+            new DiametroComercial(292.1, "11   1/2"),
+            new DiametroComercial(304.8, "12"),
+            new DiametroComercial(330.2, "13"),
+            new DiametroComercial(355.6, "14"),
+            new DiametroComercial(381, "15"),
+            new DiametroComercial(406.4, "16"),
+            new DiametroComercial(431.8, "17"),
+            new DiametroComercial(457.2, "18"),
+            new DiametroComercial(508, "20"),
+            new DiametroComercial(558.8, "22"),
+            new DiametroComercial(609.6, "24"),
+            new DiametroComercial(660.4, "26"),
+            new DiametroComercial(711.2, "28"),
+            new DiametroComercial(762.0, "30"),
+            new DiametroComercial(812.8, "32"),
+            new DiametroComercial(863.6, "34"),
+            new DiametroComercial(914.4, "36"),
+            new DiametroComercial(965.2, "38"),
+            new DiametroComercial(1000.0, "1000 mm")
     };
 
     static {
-        if (DIAMETROS_MM.length != DIAMETROS_POLEGADA.length) {
-            throw new IllegalStateException("Tabela de diâmetros inconsistente");
-        }
         validarFaixasSobremetal();
-        validarOrdemCrescente(DIAMETROS_MM, "diâmetros");
+        validarOrdemCrescente(DIAMETROS_COMERCIAIS);
     }
 
     private TabelasMateriaPrima() {
@@ -101,18 +166,16 @@ public final class TabelasMateriaPrima {
         return FAIXAS_SOBREMETAL.clone();
     }
 
-    public static double[] diametrosMm() {
-        return DIAMETROS_MM.clone();
+    public static DiametroComercial[] diametrosComerciais() {
+        return DIAMETROS_COMERCIAIS.clone();
     }
 
-    public static String[] diametrosPolegada() {
-        return DIAMETROS_POLEGADA.clone();
-    }
-
-    private static void validarOrdemCrescente(double[] valores, String nome) {
-        for (int indice = 1; indice < valores.length; indice++) {
-            if (valores[indice] <= valores[indice - 1]) {
-                throw new IllegalStateException("Tabela fora de ordem: " + nome);
+    private static void validarOrdemCrescente(DiametroComercial[] diametros) {
+        for (int indice = 1; indice < diametros.length; indice++) {
+            double anterior = diametros[indice - 1].getMilimetros();
+            double atual = diametros[indice].getMilimetros();
+            if (atual <= anterior) {
+                throw new IllegalStateException("Tabela de diâmetros fora de ordem.");
             }
         }
     }
