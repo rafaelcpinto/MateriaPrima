@@ -32,6 +32,10 @@ Principais características:
 - testes automatizados com JUnit 5;
 - build reproduzível com Maven.
 
+## Imagem
+<img width="936" height="693" alt="image" src="https://github.com/user-attachments/assets/7468477a-737e-4984-8734-3ff00d26e6a5" />
+
+
 ## Requisitos
 
 ### Para desenvolver
