@@ -1,34 +1,38 @@
 # Cálculo de Matéria-Prima
 
-Aplicativo desktop para dimensionar matéria-prima cilíndrica ou retangular e estimar sua massa conforme o material selecionado.
+Aplicação desktop desenvolvida em 2015 para uma necessidade real de cálculo de matéria-prima e mantida em uso desde sua implantação.
 
 ## Versão atual
 
-**07/2026-01**
-
-A versão exibida pela aplicação é definida em `VersaoAplicacao.ATUAL`. O artefato Maven correspondente usa a versão `2026.07.1`.
+**2026.07.1**
 
 ## Sobre o projeto
 
-O projeto foi criado em 2015 para automatizar cálculos que antes eram realizados manualmente. A aplicação continua preservando as regras e tabelas utilizadas no contexto original, mas sua estrutura foi modernizada para facilitar manutenção, testes e distribuição.
+O projeto automatiza o dimensionamento de matéria-prima cilíndrica ou retangular e estima sua massa conforme o material selecionado. Antes de sua implantação, esses cálculos eram realizados manualmente.
+
+A refatoração de 2026 reorganizou o código, adicionou validações e testes automatizados e melhorou o processo de distribuição, preservando as regras de negócio utilizadas pela aplicação em produção.
+
+> A versão publicada não representa exatamente a estrutura original de 2015; ela é uma refatoração destinada à manutenção, preservação e compartilhamento do projeto.
 
 Principais características:
 
 - interface desktop Java Swing;
 - perfis cilíndrico e retangular;
-- sete materiais com densidades próprias;
+- onze materiais cadastrados e opção de densidade personalizada;
 - seleção automática de diâmetros comerciais;
 - cálculo de sobremetal por faixa dimensional;
 - estimativa de massa em quilogramas;
 - opção de otimização abaixo da norma;
 - validação de entradas e limites;
+- ajuda contextual com diagramas incorporados ao JAR;
+- resultados selecionáveis e cópia individual para a área de transferência;
+- janela Sobre com histórico e identificação da aplicação;
 - testes automatizados com JUnit 5;
 - build reproduzível com Maven.
 
-## Imagens:
+## Imagens
 
-<img width="508" height="624" alt="image" src="https://github.com/user-attachments/assets/2a29628d-be5d-49c5-b386-bd331cbe6799" />
-
+<img width="508" height="624" alt="Interface do MateriaPrima" src="https://github.com/user-attachments/assets/2a29628d-be5d-49c5-b386-bd331cbe6799" />
 
 ## Requisitos
 
@@ -87,7 +91,9 @@ Os testes cobrem:
 
 ### Perfil cilíndrico
 
-- diâmetro acabado: de `0` a `483 mm`;
+- diâmetro acabado: deve pertencer às faixas técnicas e permitir a seleção
+  de um diâmetro comercial após a aplicação do sobremetal (na tabela atual,
+  valores até `953 mm` são aceitos);
 - comprimento: de `0` a `3500 mm`;
 - sobremetal no comprimento: maior ou igual a `0`.
 
@@ -102,14 +108,21 @@ Campos vazios, números malformados, negativos, infinitos ou `NaN` são rejeitad
 | Material | Densidade usada no cálculo (kg/mm³) |
 |---|---:|
 | Aço | 7,85 × 10⁻⁶ |
+| Aço inoxidável 304L | 7,90 × 10⁻⁶ |
 | Latão | 8,50 × 10⁻⁶ |
 | Cobre | 8,93 × 10⁻⁶ |
+| Bronze Fosfórico | 8,80 × 10⁻⁶ |
+| Alumínio | 2,70 × 10⁻⁶ |
+| Titânio Grau 2 | 4,51 × 10⁻⁶ |
 | Polipropileno | 0,93 × 10⁻⁶ |
 | Nylon | 1,14 × 10⁻⁶ |
-| Alumínio | 2,70 × 10⁻⁶ |
-| Bronze Fosfórico | 8,80 × 10⁻⁶ |
+| PEAD | 0,95 × 10⁻⁶ |
+| Acrílico (PMMA) | 1,18 × 10⁻⁶ |
 
-Os materiais, faixas de sobremetal e diâmetros comerciais estão centralizados em `TabelasMateriaPrima`.
+Os materiais, faixas de sobremetal e diâmetros comerciais estão centralizados em
+`TabelasMateriaPrima`. A interface mostra a densidade do material selecionado em
+`g/cm³` e permite informar uma densidade personalizada positiva, usando ponto ou
+vírgula decimal.
 
 ## Estrutura
 
@@ -119,14 +132,19 @@ src/main/java/materiaprima/
 ├── controller/   coordenação, validação e formatação
 ├── dados/        tabelas técnicas
 ├── modelo/       regras, entidades e resultados
-└── view/         interface Swing e formulário visual
+└── view/         interface construída com Java Swing
 
 src/test/java/materiaprima/
 ├── controller/   testes de validação e formatação
 └── modelo/       testes dos cálculos e regras
+
+src/main/resources/images/
+├── sobremetal-dimensoes.png
+└── sobremetal-comprimento.png
 ```
 
-Consulte [docs/arquitetura.md](docs/arquitetura.md) para os diagramas UML e detalhes do fluxo.
+Consulte [docs/arquitetura.md](docs/arquitetura.md) para as decisões arquiteturais e
+[docs/uml.md](docs/uml.md) para os diagramas de classes, sequência e distribuição.
 
 ## Dados técnicos
 
@@ -135,13 +153,19 @@ Consulte [docs/arquitetura.md](docs/arquitetura.md) para os diagramas UML e deta
 - Os diâmetros em milímetros e polegadas permanecem em tabelas paralelas, preparados para futura persistência em arquivo.
 - `TABELA_MATERIA_PRIMA.csv` foi preservado como referência para essa evolução.
 
+### Identificação da versão
+
+- versão pública e artefato Maven: `2026.07.1`;
+- identificação exibida na interface: `2026.07.1`;
+- a identificação da interface é centralizada em `VersaoAplicacao.ATUAL`.
+
 > A opção **Otimizar** pode selecionar valores abaixo da norma, conforme indicado na própria interface. Resultados destinados à fabricação devem ser conferidos conforme o processo e a norma aplicável.
 
 ## Histórico
 
 - **2015:** criação e implantação da primeira versão.
 - **Atualizações intermediárias:** inclusão de materiais, perfil retangular e otimização conforme necessidades dos usuários.
-- **07/2026-01:** migração para Maven, reorganização em camadas, validações, objetos de domínio, testes automatizados e preparação para distribuição em JAR/EXE.
+- **2026.07.1:** migração para Maven, reorganização em camadas, interface Swing modernizada, novos materiais e diâmetros, densidade personalizada, ajuda contextual, testes automatizados e distribuição em JAR.
 
 ## Arquivos gerados
 
