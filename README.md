@@ -27,7 +27,8 @@ Principais características:
 
 ## Imagens:
 
-<img width="508" height="625" alt="image" src="https://github.com/user-attachments/assets/21d23ec4-2bb6-4360-af13-5131ecfd3842" />
+<img width="508" height="624" alt="image" src="https://github.com/user-attachments/assets/2a29628d-be5d-49c5-b386-bd331cbe6799" />
+
 
 ## Requisitos
 
