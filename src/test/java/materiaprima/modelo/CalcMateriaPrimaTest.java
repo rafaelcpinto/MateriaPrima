@@ -79,6 +79,56 @@ public class CalcMateriaPrimaTest {
     }
 
     @Test
+    void selecionaProximoMilimetroInteiroNoPadraoMetrico() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+
+        assertDiametroMetrico(calculo, 46.0, 50.0);
+        assertDiametroMetrico(calculo, 46.01, 51.0);
+        assertDiametroMetrico(calculo, 46.8, 51.0);
+        assertDiametroMetrico(calculo, 47.0, 51.0);
+    }
+
+    @Test
+    void preservaCompatibilidadeDaSelecaoImperial() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+        ResultadoCilindrico antigo = calculo.calcularCilindrico(46.01, 100.0, false);
+        ResultadoCilindrico novo = calculo.calcularCilindrico(
+                46.01, 100.0, false, PadraoDimensional.POLEGADA);
+
+        assertTrue(antigo.getDiametroMilimetros() == novo.getDiametroMilimetros(),
+                "A sobrecarga antiga deve preservar a seleção imperial");
+        assertTrue(antigo.getDiametroPolegadas().equals(novo.getDiametroPolegadas()),
+                "A descrição imperial deve permanecer igual");
+        assertTrue(antigo.getMassa() == novo.getMassa(),
+                "A massa imperial deve permanecer igual");
+    }
+
+    @Test
+    void usaDiametroSelecionadoNoCalculoDaMassa() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+        ResultadoCilindrico metrico = calculo.calcularCilindrico(
+                46.01, 100.0, false, PadraoDimensional.METRICO);
+        ResultadoCilindrico polegada = calculo.calcularCilindrico(
+                46.01, 100.0, false, PadraoDimensional.POLEGADA);
+
+        assertTrue(metrico.getDiametroMilimetros() == 51.0,
+                "O padrão métrico deveria selecionar 51 mm");
+        assertTrue(polegada.getDiametroMilimetros() == 50.8,
+                "O padrão imperial deveria selecionar 2 polegadas");
+        assertTrue(metrico.getMassa() != polegada.getMassa(),
+                "Diâmetros selecionados diferentes devem produzir massas diferentes");
+    }
+
+    @Test
+    void rejeitaPadraoDimensionalNulo() {
+        assertThrows(new Acao() {
+            public void executar() {
+                new CalcMateriaPrima().calcularCilindrico(50.0, 100.0, false, null);
+            }
+        }, "Padrão dimensional nulo deveria ser rejeitado");
+    }
+
+    @Test
     void respeitaLimitesDasFaixasDeSobremetal() {
         FaixaSobremetal faixa = new FaixaSobremetal(0, 25, 2.6);
 
@@ -86,6 +136,19 @@ public class CalcMateriaPrimaTest {
         assertTrue(faixa.contem(24.999), "Um valor abaixo do máximo deveria pertencer à faixa");
         assertTrue(!faixa.contem(25), "O limite máximo deveria pertencer à próxima faixa");
         assertTrue(faixa.getSobremetal() == 2.6, "A faixa deveria manter seu sobremetal");
+    }
+
+    private static void assertDiametroMetrico(
+            CalcMateriaPrima calculo,
+            double diametroAcabado,
+            double diametroEsperado
+    ) {
+        ResultadoCilindrico resultado = calculo.calcularCilindrico(
+                diametroAcabado, 100.0, false, PadraoDimensional.METRICO);
+        assertTrue(resultado.getDiametroMilimetros() == diametroEsperado,
+                "O diâmetro métrico deveria ser arredondado para o próximo milímetro");
+        assertTrue(resultado.getDiametroPolegadas().endsWith("mm"),
+                "A descrição métrica deveria terminar com mm");
     }
 
     private static void assertTrue(boolean condicao, String mensagem) {

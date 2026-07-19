@@ -3,30 +3,46 @@ package materiaprima.modelo;
 public final class DiametroComercial {
 
     private final double milimetros;
-    private final String polegadas;
+    private final String descricao;
+    private final PadraoDimensional padrao;
 
-    public DiametroComercial(double milimetros, String polegadas) {
+    public DiametroComercial(
+            double milimetros,
+            String descricao,
+            PadraoDimensional padrao
+    ) {
         if (!Double.isFinite(milimetros) || milimetros <= 0) {
             throw new IllegalArgumentException(
                     "O diâmetro em milímetros deve ser positivo e finito."
             );
         }
 
-        if (polegadas == null || polegadas.trim().isEmpty()) {
+        if (descricao == null || descricao.trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "A descrição em polegada é obrigatória."
+                    "A descrição do diâmetro é obrigatória."
+            );
+        }
+
+        if (padrao == null) {
+            throw new IllegalArgumentException(
+                    "O padrão dimensional é obrigatório."
             );
         }
 
         this.milimetros = milimetros;
-        this.polegadas = polegadas;
+        this.descricao = descricao.trim();
+        this.padrao = padrao;
     }
 
     public double getMilimetros() {
         return milimetros;
     }
 
-    public String getPolegadas() {
-        return polegadas;
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public PadraoDimensional getPadrao() {
+        return padrao;
     }
 }

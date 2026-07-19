@@ -1,6 +1,7 @@
 package materiaprima.dados;
 
 import materiaprima.modelo.DiametroComercial;
+import materiaprima.modelo.PadraoDimensional;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,12 +14,13 @@ class TabelasMateriaPrimaTest {
 
     @Test
     void diametrosComerciaisSaoValidosEEstaoEmOrdemCrescente() {
-        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
+        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosPolegada();
 
         assertTrue(diametros.length > 0);
         for (int indice = 0; indice < diametros.length; indice++) {
             assertNotNull(diametros[indice]);
-            assertFalse(diametros[indice].getPolegadas().trim().isEmpty());
+            assertFalse(diametros[indice].getDescricao().trim().isEmpty());
+            assertEquals(PadraoDimensional.POLEGADA, diametros[indice].getPadrao());
             if (indice > 0) {
                 assertFalse(diametros[indice].getMilimetros()
                         <= diametros[indice - 1].getMilimetros());
@@ -28,12 +30,13 @@ class TabelasMateriaPrimaTest {
 
     @Test
     void ultimoDiametroComercialEhTrintaEOitoPolegadas() {
-        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosComerciais();
+        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosPolegada();
 
         DiametroComercial ultimo = diametros[diametros.length - 1];
 
         assertEquals(965.2, ultimo.getMilimetros(), 0.0001);
-        assertEquals("38", ultimo.getPolegadas());
+        assertEquals("38", ultimo.getDescricao());
+        assertEquals(PadraoDimensional.POLEGADA, ultimo.getPadrao());
     }
 
     @Test
@@ -41,11 +44,12 @@ class TabelasMateriaPrimaTest {
         DiametroComercial[] primeiraCopia = TabelasMateriaPrima.diametrosComerciais();
         DiametroComercial primeiroOriginal = primeiraCopia[0];
 
-        primeiraCopia[0] = new DiametroComercial(1.0, "alterado");
+        primeiraCopia[0] = new DiametroComercial(
+                1.0, "alterado", PadraoDimensional.POLEGADA);
         DiametroComercial[] segundaCopia = TabelasMateriaPrima.diametrosComerciais();
 
         assertNotSame(primeiraCopia, segundaCopia);
         assertEquals(primeiroOriginal.getMilimetros(), segundaCopia[0].getMilimetros());
-        assertEquals(primeiroOriginal.getPolegadas(), segundaCopia[0].getPolegadas());
+        assertEquals(primeiroOriginal.getDescricao(), segundaCopia[0].getDescricao());
     }
 }

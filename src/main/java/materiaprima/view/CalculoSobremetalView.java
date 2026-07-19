@@ -36,8 +36,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import materiaprima.aplicacao.VersaoAplicacao;
 import materiaprima.controller.CalculoSobremetalController;
-import materiaprima.controller.ValidadorCalculo;
 import materiaprima.dados.TabelasMateriaPrima;
+import materiaprima.modelo.DiametroComercial;
 import materiaprima.modelo.Material;
 
 public class CalculoSobremetalView extends JFrame {
@@ -315,13 +315,15 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private static String criarTextoAjudaDiametro() {
-        double limite = new ValidadorCalculo().limiteDiametroCilindrico();
+        DiametroComercial[] diametros = TabelasMateriaPrima.diametrosPolegada();
+        DiametroComercial maior = diametros[diametros.length - 1];
         String milimetros = String.format(
-                new Locale("pt", "BR"), "%.1f", limite);
+                new Locale("pt", "BR"), "%.1f", maior.getMilimetros());
         return "Informe o maior diâmetro final da peça após a usinagem. A aplicação "
                 + "utilizará esse valor para selecionar o diâmetro comercial da "
                 + "matéria-prima e calcular o sobremetal."
-                + "<br><br>Valor máximo = " + milimetros + " mm";
+                + "<br><br>Limite da tabela = " + maior.getDescricao() + "\" ("
+                + milimetros + " mm)";
     }
 
     private void configurarDensidade() {
