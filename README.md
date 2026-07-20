@@ -23,12 +23,12 @@ Principais características:
 - seleção automática de dimensões comerciais;
 - cálculo de sobremetal por faixa dimensional;
 - estimativa de massa em quilogramas;
-- opção de otimização abaixo da norma;
+- opção “Permitir dimensão abaixo da recomendada”, com regras específicas por perfil e padrão;
 - validação de entradas e limites;
 - ajuda contextual com diagramas incorporados ao JAR;
 - resultados selecionáveis e cópia individual para a área de transferência;
 - visualização dinâmica e proporcional da matéria-prima e da peça acabada;
-- janela Sobre com histórico e identificação da aplicação;
+- janela Sobre em abas, com histórico, materiais, tabelas e referência completa de cálculo;
 - testes automatizados com JUnit 5;
 - build reproduzível com Maven.
 
@@ -181,7 +181,21 @@ Consulte [docs/arquitetura.md](docs/arquitetura.md) para as decisões arquitetur
 - identificação exibida na interface: `2026.07.1`;
 - a identificação da interface é centralizada em `VersaoAplicacao.ATUAL`.
 
-> A opção **Otimizar** pode selecionar valores abaixo da norma, conforme indicado na própria interface. Resultados destinados à fabricação devem ser conferidos conforme o processo e a norma aplicável.
+### Dimensão abaixo da recomendada
+
+A opção “Permitir dimensão abaixo da recomendada” preserva regras específicas de
+cada perfil e padrão. No padrão Milímetro, ela reduz o sobremetal aplicado para
+50%. No cilíndrico em Polegada, mantém o sobremetal integral e seleciona a
+dimensão inferior da tabela. No retangular em Polegada, reduz o sobremetal para
+50% e seleciona a dimensão inferior.
+
+A janela Sobre apresenta o histórico da aplicação, materiais e densidades, uso
+de densidade personalizada, faixas de sobremetal, dimensões comerciais, fórmulas
+e regras de cálculo. Os dados técnicos são carregados das mesmas tabelas usadas
+pelo modelo.
+
+Resultados destinados à fabricação devem ser conferidos conforme o material, o
+processo, a fixação e a norma aplicável.
 
 ## Histórico
 

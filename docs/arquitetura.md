@@ -12,6 +12,7 @@ flowchart LR
     Main --> View[CalculoSobremetalView]
     View --> Controller[CalculoSobremetalController]
     View --> Visualizacao[PainelVisualizacao]
+    View --> Sobre[SobreDialog]
     View --> Componentes[CardPanel e Icones]
     Controller --> Validador[ValidadorCalculo]
     Controller --> Formatador[FormatadorResultado]
@@ -26,7 +27,7 @@ flowchart LR
 | Área | Responsabilidade |
 |---|---|
 | `aplicacao` | Instalar o FlatLaf, iniciar o Swing e centralizar a versão exibida. |
-| `view` | Montar os três cards, ler entradas, exibir resultados, copiar valores, mostrar ajudas e renderizar a visualização dinâmica. |
+| `view` | Montar os três cards, ler entradas, exibir resultados, copiar valores, mostrar ajudas e renderizar a visualização dinâmica. `SobreDialog` apresenta a referência técnica em abas. |
 | `controller` | Coordenar o perfil escolhido, validar entradas e formatar a apresentação dos resultados. |
 | `modelo` | Aplicar sobremetal, selecionar dimensões comerciais e calcular massa. |
 | `dados` | Manter materiais, faixas de sobremetal e a tabela imperial em memória. |
@@ -40,8 +41,11 @@ Todas as entradas e todos os cálculos internos usam milímetros.
 - `PadraoDimensional.POLEGADA`: seleciona uma `DimensaoComercial` da tabela
   imperial mantida por `TabelasMateriaPrima`.
 - No retangular, largura, altura e comprimento são selecionados separadamente.
-- A opção de permitir dimensão abaixo da recomendada preserva a regra histórica
-  do cálculo e da busca na tabela.
+- A opção de permitir dimensão abaixo da recomendada preserva quatro regras históricas:
+  - cilíndrico/milimétrico: 50% do sobremetal quando marcada e `Math.ceil()`;
+  - cilíndrico/imperial: sobremetal integral e seleção inferior quando marcada;
+  - retangular/milimétrico: 50% quando marcada, 1 mm fixo e `Math.ceil()`;
+  - retangular/imperial: 50% quando marcada, 1 mm fixo e seleção inferior.
 
 `DimensaoComercial` é imutável e associa:
 
@@ -96,6 +100,12 @@ valor imperial contém somente a descrição em polegadas. Cada linha possui um
 `PainelVisualizacao` usa `Graphics2D`, antialiasing e dimensões normalizadas. O
 desenho preserva relações proporcionais, aplicando uma diferença visual mínima
 para que sobremetais pequenos permaneçam perceptíveis.
+
+`SobreDialog` é um `JDialog` modal próprio, aberto pela View principal. Suas abas
+Sobre, Materiais, Tabelas e Cálculo documentam histórico, unidades, fórmulas e as
+quatro combinações dimensionais. Materiais, faixas de sobremetal e dimensões
+imperiais são carregados dinamicamente de `TabelasMateriaPrima`; a View apenas
+formata esses objetos para apresentação, sem duplicar os dados técnicos.
 
 ## Dados e validação
 

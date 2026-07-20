@@ -48,7 +48,9 @@ public class CalcMateriaPrima{
         }
 
         double sobremetalTabela = calcularSobremetal(diametroAcabado);
-        double diametroNecessario = diametroAcabado + sobremetalTabela;
+        double diametroNecessario = padrao == PadraoDimensional.METRICO
+                ? diametroAcabado + sobremetalTabela * (reduzir ? 0.5 : 1.0)
+                : diametroAcabado + sobremetalTabela;
         DimensaoComercial selecionado;
         if (padrao == PadraoDimensional.METRICO) {
             selecionado = selecionarDimensaoMetrica(diametroNecessario);

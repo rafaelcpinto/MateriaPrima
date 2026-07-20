@@ -151,6 +151,74 @@ public class CalcMateriaPrimaTest {
     }
 
     @Test
+    void reduzSobremetalCilindricoMetricoAntesDoArredondamento() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+        ResultadoCilindrico normal = calculo.calcularCilindrico(
+                40.0, 120.0, false, PadraoDimensional.METRICO);
+        ResultadoCilindrico reduzido = calculo.calcularCilindrico(
+                40.0, 120.0, true, PadraoDimensional.METRICO);
+
+        assertTrue(normal.getDiametroMilimetros() == 44.0,
+                "Sobremetal métrico integral deveria resultar em 44 mm");
+        assertTrue(reduzido.getDiametroMilimetros() == 42.0,
+                "Metade do sobremetal métrico deveria resultar em 42 mm");
+        assertTrue(reduzido.getSobremetal() / 2.0 == 1.0,
+                "Sobremetal por lado deveria derivar do diâmetro selecionado");
+        assertTrue(reduzido.getComprimentoTotal() == 120.0,
+                "O comprimento total deveria permanecer inalterado");
+        double massa = Math.pow(42.0 / 2.0, 2) * Math.PI * 120.0
+                * TabelasMateriaPrima.material(0).getDensidade();
+        assertTrue(reduzido.getMassa() == massa,
+                "A massa deveria usar o diâmetro métrico selecionado");
+
+        ResultadoCilindrico arredondado = calculo.calcularCilindrico(
+                40.1, 120.0, true, PadraoDimensional.METRICO);
+        assertTrue(arredondado.getDiametroMilimetros() == 43.0,
+                "Math.ceil deveria permanecer após a redução");
+    }
+
+    @Test
+    void cilindricoImperialMantemSobremetalIntegralEAlternaLimite() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+        ResultadoCilindrico superior = calculo.calcularCilindrico(
+                40.0, 100.0, false, PadraoDimensional.POLEGADA);
+        ResultadoCilindrico inferior = calculo.calcularCilindrico(
+                40.0, 100.0, true, PadraoDimensional.POLEGADA);
+
+        assertTrue(superior.getDiametroMilimetros() == 44.45,
+                "Sem opção deveria selecionar o limite superior imperial");
+        assertTrue(inferior.getDiametroMilimetros() == 41.275,
+                "Com opção deveria selecionar o limite inferior do intervalo de 44 mm");
+        double massa = Math.pow(41.275 / 2.0, 2) * Math.PI * 100.0
+                * TabelasMateriaPrima.material(0).getDensidade();
+        assertTrue(inferior.getMassa() == massa,
+                "A massa deveria usar o diâmetro imperial selecionado");
+    }
+
+    @Test
+    void retangularPreservaFatoresAcrescimoSelecaoIndependenteEMassa() {
+        CalcMateriaPrima calculo = new CalcMateriaPrima();
+        ResultadoRetangular metrico = calculo.calcularRetangular(
+                40.1, 25.1, 63.1, true, PadraoDimensional.METRICO);
+        assertTrue(metrico.getLarguraMilimetros() == 44.0,
+                "Largura deveria usar 1 mm, metade do sobremetal e ceil");
+        assertTrue(metrico.getAlturaMilimetros() == 28.0,
+                "Altura deveria ser calculada independentemente");
+        assertTrue(metrico.getComprimentoMilimetros() == 67.0,
+                "Comprimento deveria ser calculado independentemente");
+        assertTrue(metrico.getMassa() == 44.0 * 28.0 * 67.0
+                        * TabelasMateriaPrima.material(0).getDensidade(),
+                "Massa retangular deveria usar dimensões comerciais");
+
+        ResultadoRetangular imperial = calculo.calcularRetangular(
+                40.1, 25.1, 63.1, true, PadraoDimensional.POLEGADA);
+        assertTrue(imperial.getLarguraMilimetros() == 41.275
+                        && imperial.getAlturaMilimetros() == 26.9875
+                        && imperial.getComprimentoMilimetros() == 63.5,
+                "Cada dimensão imperial deveria usar fator 0,5 e seu intervalo inferior");
+    }
+
+    @Test
     void preservaCompatibilidadeDaSelecaoImperial() {
         CalcMateriaPrima calculo = new CalcMateriaPrima();
         ResultadoCilindrico antigo = calculo.calcularCilindrico(46.01, 100.0, false);

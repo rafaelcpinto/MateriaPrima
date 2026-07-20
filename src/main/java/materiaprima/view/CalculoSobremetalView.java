@@ -373,8 +373,14 @@ public class CalculoSobremetalView extends JFrame {
         adicionarLinha(painel, 6, criarRotuloComAjuda(rotuloValor3, ajudaValor3), valor3);
 
         otimizar.setToolTipText(
-                "Pode selecionar uma dimensão comercial abaixo da recomendação padrão. "
-                        + "Confirme a adequação ao processo de fabricação e à norma aplicável.");
+                "<html><b>Milímetro:</b> utiliza 50% do sobremetal da faixa antes "
+                        + "do arredondamento para o próximo milímetro inteiro.<br><br>"
+                        + "<b>Cilíndrico em Polegada:</b> mantém o sobremetal integral "
+                        + "e permite selecionar a dimensão inferior do intervalo da tabela.<br><br>"
+                        + "<b>Retangular em Polegada:</b> utiliza 50% do sobremetal "
+                        + "e permite selecionar a dimensão inferior do intervalo da tabela.<br><br>"
+                        + "Confirme a adequação ao processo de fabricação e à norma aplicável."
+                        + "</html>");
         otimizar.setBackground(COR_PAINEL);
         otimizar.setForeground(COR_TEXTO);
         GridBagConstraints opcao = restricoes(0, 7);
@@ -642,59 +648,7 @@ public class CalculoSobremetalView extends JFrame {
     }
 
     private void abrirSobre() {
-        final JDialog dialogo = new JDialog(
-                this, "Sobre — Cálculo de Matéria-Prima", true);
-        dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialogo.setLayout(new BorderLayout(0, 16));
-
-        JPanel conteudo = new JPanel();
-        conteudo.setBackground(COR_PAINEL);
-        conteudo.setBorder(BorderFactory.createEmptyBorder(22, 26, 8, 26));
-        conteudo.setLayout(new javax.swing.BoxLayout(conteudo, javax.swing.BoxLayout.Y_AXIS));
-
-        JLabel nome = new JLabel("Cálculo de Matéria-Prima");
-        nome.setFont(nome.getFont().deriveFont(Font.BOLD, 19f));
-        nome.setForeground(COR_TITULO);
-        nome.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel versao = new JLabel("Versão " + VersaoAplicacao.ATUAL);
-        versao.setForeground(COR_TEXTO_SECUNDARIO);
-        versao.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel descricao = new JLabel(
-                "<html><div style='width: 500px; color: #374151;'>"
-                        + "<p>Desenvolvido por Rafael C. Pinto.</p>"
-                        + "<p>Aplicação criada originalmente em 2015 para atender a uma "
-                        + "necessidade real de cálculo de matéria-prima.</p>"
-                        + "<p>O programa permanece em uso desde sua implantação e recebeu "
-                        + "atualizações para inclusão de novas funcionalidades.</p>"
-                        + "<p>A versão atual reorganiza a interface, melhora as validações, "
-                        + "adiciona testes e facilita a distribuição, preservando as regras de "
-                        + "cálculo utilizadas no contexto original.</p>"
-                        + "<p>Os resultados são estimativas para apoio ao processo de fabricação "
-                        + "e devem ser conferidos conforme o material, o processo e a norma "
-                        + "aplicável.</p></div></html>");
-        descricao.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        conteudo.add(nome);
-        conteudo.add(javax.swing.Box.createVerticalStrut(4));
-        conteudo.add(versao);
-        conteudo.add(javax.swing.Box.createVerticalStrut(12));
-        conteudo.add(descricao);
-        dialogo.add(conteudo, BorderLayout.CENTER);
-
-        JButton fechar = new JButton("Fechar");
-        fechar.addActionListener(evento -> dialogo.dispose());
-        JPanel rodape = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        rodape.setBackground(COR_PAINEL);
-        rodape.setBorder(BorderFactory.createEmptyBorder(0, 18, 12, 18));
-        rodape.add(fechar);
-        dialogo.add(rodape, BorderLayout.SOUTH);
-
-        dialogo.pack();
-        dialogo.setResizable(false);
-        dialogo.setLocationRelativeTo(this);
-        dialogo.setVisible(true);
+        new SobreDialog(this).setVisible(true);
     }
 
     private JPanel criarRotuloComAjuda(JLabel rotulo, JLabel ajuda) {

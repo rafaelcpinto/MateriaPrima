@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -61,6 +62,7 @@ class CalculoSobremetalViewTest {
         JLabel equivalenteResultado3 = campo("equivalenteResultado3");
         JButton calcular = campo("botaoCalcular");
         JButton limpar = campo("botaoLimpar");
+        JCheckBox otimizar = campo("otimizar");
         JRadioButton perfilCilindrico = campo("perfilCilindrico");
         JRadioButton perfilRetangular = campo("perfilRetangular");
         JLabel ajudaValor1 = campo("ajudaValor1");
@@ -79,6 +81,8 @@ class CalculoSobremetalViewTest {
             assertTrue(ajudaValor1.getToolTipText().contains("919,2 mm"));
             assertFalse(ajudaValor1.getToolTipText().contains("38\""));
             assertNull(ajudaValor1.getClientProperty("textoClique"));
+            assertEquals("Permitir dimensão abaixo da recomendada", otimizar.getText());
+            assertTrue(otimizar.getToolTipText().contains("Cilíndrico em Polegada"));
             valor1.setText("46.01");
             valor2.setText("100");
             valor3.setText("20");
@@ -93,7 +97,11 @@ class CalculoSobremetalViewTest {
         String massaPolegada = resultadoMassa.getText();
 
         SwingUtilities.invokeAndWait(() -> {
+            otimizar.setSelected(true);
             limpar.doClick();
+            assertFalse(otimizar.isSelected());
+            assertTrue(padraoPolegada.isSelected());
+            assertTrue(perfilCilindrico.isSelected());
             assertFalse(equivalenteDiametro.isVisible());
             valor1.setText("46.01");
             valor2.setText("100");
